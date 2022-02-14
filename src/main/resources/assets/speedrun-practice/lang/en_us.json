@@ -28,5 +28,16 @@
   "speedrun-practice.options.towers.t94": "T94",
   "speedrun-practice.options.towers.t97": "T97",
   "speedrun-practice.options.towers.t100": "T100",
-  "speedrun-practice.options.towers.t103": "T103"
+  "speedrun-practice.options.towers.t103": "T103",
+  "speedrun-practice.quickoptions.mode": "Mode",
+  "speedrun-practice.quicksettings.modes.end": "End Practice",
+  "speedrun-practice.quicksettings.modes.nether": "Nether Practice",
+  "speedrun-practice.quicksettings.modes.overworld": "Overworld Practice",
+  "speedrun-practice.quicksettings.modes.postblind": "Post Blind Practice",
+  "speedrun-practice.quicksettings.title": "SpeedrunPractice",
+  "speedrun-practice.inventorymanagement.options.profile": "Profile",
+  "speedrun-practice.inventorymanagement.options.currentSlot": "Slot",
+  "speedrun-practice.inventorymanagement.options.save": "Save current inventory",
+  "speedrun-practice.inventorymanagement.options.select": "Select current slot",
+  "speedrun-practice.quickoptions.seed": "Set current seed"
 }

@@ -11,7 +11,7 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "com.gregor0410.speedrunpractice.SpeedrunPractice"
+      "me.ronkzinho.speedrunpractice.SpeedrunPractice"
     ]
   },
   "mixins": [

@@ -1,3 +1,11 @@
+#Disclaimer
+This is a fork of [gregor's SpeerunPractice](https://github.com/ronkzinho/SpeedrunPractice) mod, all rights reserved to him.
+
+#Usage
+This fork makes so instead of a bunch of commands you control it with a GUI, you can either shift left-click(if there's already a selected world) or simply left-click the golden carrot at the title screen to start a session or edit it.
+
+Original readme below
+
 # SpeedrunPractice
 A mod designed to streamline the practicing process for minecraft speedrunners. Includes end practice, post blind practice, nether practice, and overworld practice, as well as the ability to change structure generation settings like nether structure region size and what bastion types can spawn.
 

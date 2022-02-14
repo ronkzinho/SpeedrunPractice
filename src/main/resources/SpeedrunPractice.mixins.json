@@ -1,19 +1,20 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "com.gregor0410.speedrunpractice.mixin",
-  "compatibilityLevel": "JAVA_8",
+  "package": "me.ronkzinho.speedrunpractice.mixin",
   "mixins": [
     "AbstractFireBlockMixin",
     "BastionRemnantFeatureConfigMixin",
     "BastionRemnantFeatureMixin",
     "ChunkGeneratorTypeMixin",
+    "ClientWorldMixin",
     "DimensionTypeAccess",
     "EnderDragonFightAccess",
     "EndPortalBlockMixin",
     "EntityMixin",
     "KeyboardMixin",
     "LevelPropertiesAccess",
+    "MinecraftClientMixin",
     "MinecraftServerAccess",
     "MinecraftServerMixin",
     "NetherFortressFeatureMixin",
@@ -29,7 +30,8 @@
     "SpikeCacheMixin",
     "StructuresConfigAccess",
     "StructuresConfigMixin",
-    "ThreadedAnvilChunkStorageAccess"
+    "ThreadedAnvilChunkStorageAccess",
+    "TitleScreenMixin"
   ],
   "client": [
     "DebugHudMixin"
