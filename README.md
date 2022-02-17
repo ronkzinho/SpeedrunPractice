@@ -1,7 +1,7 @@
-#Disclaimer
+# Disclaimer
 This is a fork of [gregor's SpeerunPractice](https://github.com/ronkzinho/SpeedrunPractice) mod, all rights reserved to him.
 
-#Usage
+# Usage
 This fork makes so instead of a bunch of commands you control it with a GUI, you can either shift left-click(if there's already a selected world) or simply left-click the golden carrot at the title screen to start a session or edit it.
 
 Original readme below
