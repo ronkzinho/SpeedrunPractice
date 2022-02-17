@@ -98,6 +98,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
     @Inject(method="tick",at=@At("HEAD"))
     private void onTick(BooleanSupplier shouldKeepTicking, CallbackInfo ci){
+        if(!SpeedrunPractice.isPlaying) return;
         Runnable runnable;
         do{
             runnable = tickStart.poll();
@@ -107,6 +108,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
     @Inject(method="setDifficulty",at=@At("HEAD"))
     private void setDifficulty(Difficulty difficulty, boolean bl, CallbackInfo ci){
+        if(!SpeedrunPractice.isPlaying) return;
         LevelInfo levelInfo = saveProperties.getLevelInfo().method_28381(difficulty);
         this.worlds.values().forEach(world->{
             if(world instanceof PracticeWorld) {
@@ -126,6 +128,7 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
 
     @Inject(method="createWorlds",at=@At("TAIL"))
     private void createPracticeWorlds(CallbackInfo ci) throws IOException {
+        if(!SpeedrunPractice.isPlaying) return;
         Path worldDir = this.session.getDirectory(WorldSavePath.ROOT).resolve("dimensions/speedrun_practice");
         String[] dimensions = {"overworld","nether","end"};
         Map<String,Map<String,RegistryKey<World>>> linkedKeys = new HashMap<>();

@@ -3,6 +3,7 @@ package me.ronkzinho.speedrunpractice.mixin;
 import me.ronkzinho.speedrunpractice.SpeedrunPractice;
 import me.ronkzinho.speedrunpractice.world.PracticeWorld;
 import net.fabricmc.loader.api.VersionParsingException;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
@@ -37,11 +38,28 @@ public class PlayerManagerMixin {
     }
 
     @Inject(method = "onPlayerConnect",at=@At("TAIL"))
-    private void showWelcomeMessage(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci) throws IOException, VersionParsingException, NoSuchFieldException, IllegalAccessException {
+    private void showWelcomeMessage(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci){
+        if(SpeedrunPractice.selectingWorldParent != null){
+            MinecraftClient.getInstance().submit(() -> {
+                SpeedrunPractice.selectingWorldParent.setForced(true);
+                SpeedrunPractice.selectingWorldParent.setCustomDone(button -> {
+                    SpeedrunPractice.isPlaying = true;
+                    welcome(player);
+                });
+                SpeedrunPractice.selectingWorldParent.server = this.server;
+                MinecraftClient.getInstance().openScreen(SpeedrunPractice.selectingWorldParent);
+            });
+        }
         if(!SpeedrunPractice.isPlaying) return;
-        if(!SpeedrunPractice.welcomeShown)
-            SpeedrunPractice.sendWelcomeMessage(player);
-        SpeedrunPractice.welcomeShown = true;
-        SpeedrunPractice.practice();
+        welcome(player);
+    }
+
+    public void welcome(ServerPlayerEntity player) {
+        try{
+            if(!SpeedrunPractice.welcomeShown)
+                SpeedrunPractice.sendWelcomeMessage(player);
+            SpeedrunPractice.welcomeShown = true;
+            this.server.submit(SpeedrunPractice::practice);
+        }catch(Exception ignored){}
     }
 }

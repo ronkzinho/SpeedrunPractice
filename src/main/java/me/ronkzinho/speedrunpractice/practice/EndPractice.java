@@ -20,10 +20,11 @@ public class EndPractice extends Practice{
             world = ((IMinecraftServer)server).createEndPracticeWorld(seed);
             player.setSpawnPoint(World.OVERWORLD,null,false,false);
             ServerWorld.createEndSpawnPlatform(world);
-            Practice.resetPlayer(player);
-            Practice.getInventory(player,"end");
+            resetPlayer(player);
+            getInventory(player,"end");
             player.teleport(world,100,49,0,90,0);
-            Practice.startSpeedrunIGTTimer();
+            startSpeedrunIGTTimer();
+            resetScreen();
             return 1;
         } catch (Exception e) {
             return 0;

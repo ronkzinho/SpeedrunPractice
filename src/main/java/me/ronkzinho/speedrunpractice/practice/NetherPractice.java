@@ -40,11 +40,12 @@ public class NetherPractice extends Practice {
         //this needs to be a server task so the portal gets added to poi storage before the changeDimension call
         server.execute(()-> {
             player.refreshPositionAndAngles(netherPos,90,0);
-            Practice.resetPlayer(player);
-            Practice.getInventory(player, "nether");
+            resetPlayer(player);
+            getInventory(player, "nether");
             player.changeDimension(nether);
             player.setVelocity(Vec3d.ZERO);
-            Practice.startSpeedrunIGTTimer();
+            startSpeedrunIGTTimer();
+            resetScreen();
         });
         return 1;
     }

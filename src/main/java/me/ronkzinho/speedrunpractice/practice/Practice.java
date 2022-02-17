@@ -1,6 +1,7 @@
 package me.ronkzinho.speedrunpractice.practice;
 
 import me.ronkzinho.speedrunpractice.SpeedrunPractice;
+import me.ronkzinho.speedrunpractice.SpeedrunPracticeRandom;
 import me.ronkzinho.speedrunpractice.mixin.ServerPlayerEntityAccess;
 import me.ronkzinho.speedrunpractice.world.PracticeWorld;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -8,8 +9,10 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.world.MoreOptionsDialog;
+import net.minecraft.enchantment.Enchantments;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
+import net.minecraft.item.*;
 import net.minecraft.loot.LootTable;
 import net.minecraft.loot.LootTables;
 import net.minecraft.loot.context.LootContext;
@@ -25,6 +28,7 @@ import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Language;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -35,10 +39,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.OptionalLong;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class Practice {
@@ -63,34 +64,38 @@ public abstract class Practice {
     abstract public int run(long seed);
 
     public static int setSlot(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        return setSlot(IntegerArgumentType.getInteger(ctx,"slot"), ctx.getNodes().get(2).getNode().getName(), ctx.getSource().getPlayer());
+        String result = setSlot(IntegerArgumentType.getInteger(ctx,"slot"), ctx.getNodes().get(2).getNode().getName(), ctx.getSource().getPlayer(), 1);
+        return result != null ? 1 : 0;
     }
 
-    public static int setSlot(int slot, String key) {
-        return setSlot(slot, key, Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getPlayerManager().getPlayerList().get(0));
+    public static String setSlot(int slot, String key) {
+        return setSlot(slot, key, Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getPlayerManager().getPlayerList().get(0), 2);
     }
 
-    public static int setSlot(int slot, String key, ServerPlayerEntity player){
-        player.sendMessage(new LiteralText(String.format("§aSet %s slot to §2§lslot %d", key,slot)),false);
+    public static String setSlot(int slot, String key, ServerPlayerEntity player, int mode){
+        String text = String.format(Language.getInstance().get("speedrun-practice.inventorymanagement.options.slot.set"), key,slot);
+        if(mode == 1) player.sendMessage(new LiteralText(text),false);
         SpeedrunPractice.config.practiceSlots.put(key,slot-1);
         try {
             SpeedrunPractice.config.save();
         } catch (IOException e) {
-            return 0;
+            return null;
         }
-        return 1;
+        return text;
     }
 
     public static int saveSlot(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        return saveSlot(IntegerArgumentType.getInteger(ctx,"slot"), ctx.getNodes().get(2).getNode().getName(), ctx.getSource().getPlayer());
+        String result = saveSlot(IntegerArgumentType.getInteger(ctx,"slot"), ctx.getNodes().get(2).getNode().getName(), ctx.getSource().getPlayer(), 1);
+        return result != null ? 1 : 0;
     }
 
-    public static int saveSlot(int slot, String key){
-        return saveSlot(slot, key, Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getPlayerManager().getPlayerList().get(0));
+    public static String saveSlot(int slot, String key){
+        return saveSlot(slot, key, Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getPlayerManager().getPlayerList().get(0), 2);
     }
 
-    public static int saveSlot(int slot, String key, ServerPlayerEntity player){
-        player.sendMessage(new LiteralText(String.format("§aSaved current inventory to §2§l%s slot %d",key, slot)),false);
+    public static String saveSlot(int slot, String key, ServerPlayerEntity player, int mode){
+        String text = String.format(Language.getInstance().get("speedrun-practice.inventorymanagement.options.slot.save"),key, slot);
+        if(mode == 1) player.sendMessage(new LiteralText(text), false);
         PlayerInventory inventory = player.inventory;
         ListTag listTag = new ListTag();
         inventory.serialize(listTag);
@@ -98,9 +103,9 @@ public abstract class Practice {
         try {
             SpeedrunPractice.config.save();
         } catch (IOException e) {
-            return 0;
+            return null;
         }
-        return 1;
+        return text;
     }
 
     public static void startSpeedrunIGTTimer(){
@@ -111,6 +116,10 @@ public abstract class Practice {
         } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored){}
     }
 
+    public static void resetScreen(){
+        MinecraftClient.getInstance().openScreen(null);
+        MinecraftClient.getInstance().mouse.lockCursor();
+    }
 
     public static void getInventory(ServerPlayerEntity player, String key) {
         player.inventory.clear();

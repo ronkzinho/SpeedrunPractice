@@ -1,6 +1,5 @@
 package me.ronkzinho.speedrunpractice.mixin;
 
-import me.ronkzinho.speedrunpractice.QuickSettingsScreen;
 import me.ronkzinho.speedrunpractice.SpeedrunPractice;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.SaveLevelScreen;
@@ -24,7 +23,7 @@ public abstract class MinecraftClientMixin {
 
     @Inject(method = "startIntegratedServer(Ljava/lang/String;)V", at = @At("HEAD"), cancellable = true)
     public void startIntegratedServerMixin(String worldName, CallbackInfo ci) {
-        if(SpeedrunPractice.isSelectingWorld){
+        if(SpeedrunPractice.selectingWorldParent != null){
             this.selectWorld(worldName);
             ci.cancel();
         }
@@ -32,9 +31,8 @@ public abstract class MinecraftClientMixin {
 
     public void selectWorld(String worldName){
         SpeedrunPractice.worldName = worldName;
-        QuickSettingsScreen quickSettingsScreen = new QuickSettingsScreen(new TitleScreen());
-        quickSettingsScreen.setForced(true);
-        this.openScreen(quickSettingsScreen);
+        SpeedrunPractice.selectingWorldParent.setForced(true);
+        this.openScreen(SpeedrunPractice.selectingWorldParent);
     }
 
     @Inject(method = "openScreen", at = @At("HEAD"), cancellable = true)

@@ -7,6 +7,7 @@ import com.google.gson.JsonObject;
 import me.ronkzinho.speedrunpractice.command.Command;
 import me.ronkzinho.speedrunpractice.practice.*;
 import me.ronkzinho.speedrunpractice.config.ModConfig;
+import me.ronkzinho.speedrunpractice.screens.QuickSettingsScreen;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -15,7 +16,6 @@ import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.impl.util.version.SemanticVersionImpl;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.SaveLevelScreen;
-import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
@@ -31,7 +31,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 
-import java.awt.*;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.*;
@@ -42,7 +41,7 @@ import static java.lang.Math.ceil;
 public class SpeedrunPractice implements ModInitializer {
     public static ModConfig config;
     public static String worldName;
-    public static boolean isSelectingWorld;
+    public static QuickSettingsScreen selectingWorldParent;
     public static PracticeMode practiceMode = PracticeMode.END;
     public static String practiceSeedText;
     public static final Identifier BUTTON_ICON_TEXTURE = new Identifier("textures/item/golden_carrot.png");
@@ -81,9 +80,9 @@ public class SpeedrunPractice implements ModInitializer {
                 .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,new LiteralText("Click"))))
                 .formatted(Formatting.DARK_GREEN),false);
         CloseableHttpClient client = HttpClients.createDefault();
-        HttpGet request = new HttpGet("https://api.github.com/repos/gregor0410/speedrunpractice/releases/latest");
+        HttpGet request = new HttpGet("https://api.github.com/repos/ronkzinho/speedrunpractice/releases/latest");
         JsonObject jsonObject = client.execute(request, res -> gson.fromJson(new InputStreamReader(res.getEntity().getContent()), JsonObject.class));
-        String latestVersion = jsonObject.get("name").getAsString().substring(1); //get rid of the leading v
+        String latestVersion = jsonObject.get("tag_name").getAsString().substring(1); //get rid of the leading v
         String patchNotes = jsonObject.get("body").getAsString();
         if(version.compareTo(new SemanticVersionImpl(latestVersion,false))<0){
             player.sendMessage(new LiteralText(String.format("There is a new version available: v%s", latestVersion)).formatted(Formatting.RED),false);
@@ -91,7 +90,7 @@ public class SpeedrunPractice implements ModInitializer {
             player.sendMessage(
                 new LiteralText("Click to download latest version")
                     .setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x00ff00))
-                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,"https://github.com/Gregor0410/SpeedrunPractice/releases/latest"))
+                    .withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,"https://github.com/ronkzinho/SpeedrunPractice/releases/latest"))
                     .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,new LiteralText("Click")))),false);
         }else{
             player.sendMessage(new LiteralText("You are on the latest version."),false);
@@ -125,11 +124,11 @@ public class SpeedrunPractice implements ModInitializer {
 
     public static void practice(){
         MinecraftClient client = MinecraftClient.getInstance();
-        client.getServer().getPlayerManager().getPlayerList().stream().forEach(player -> player.setGameMode(GameMode.SURVIVAL));
-        client.openScreen(new SaveLevelScreen(new LiteralText("Creating Practice World")));
+        Objects.requireNonNull(client.getServer()).getPlayerManager().getPlayerList().forEach(player -> player.setGameMode(GameMode.SURVIVAL));
+        client.submit(() -> {
+            client.method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.practiceworld")));
+        });
         practiceMode.getPracticeClass().run();
-        client.openScreen(null);
-        client.mouse.lockCursor();
     }
 
     public enum DragonType{

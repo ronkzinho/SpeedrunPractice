@@ -4,9 +4,11 @@ import me.ronkzinho.speedrunpractice.IMinecraftServer;
 import me.ronkzinho.speedrunpractice.SpeedrunPractice;
 import me.ronkzinho.speedrunpractice.world.PracticeWorld;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.SaveLevelScreen;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
+import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Unit;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
@@ -17,6 +19,7 @@ import net.minecraft.world.gen.feature.StructureFeature;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 
 public class PostBlindPractice extends Practice {
@@ -31,6 +34,7 @@ public class PostBlindPractice extends Practice {
         } catch (IOException e) {
             return 0;
         }
+        MinecraftClient.getInstance().submit(() -> MinecraftClient.getInstance().method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.practiceworld"))));
         server.getCommandManager().execute(server.getCommandSource().withSilent(),"/advancement revoke @a everything");
         PracticeWorld overworld = linkedPracticeWorld.get(DimensionType.OVERWORLD_REGISTRY_KEY);
         if(SpeedrunPractice.config.postBlindSpawnChunks)
@@ -45,10 +49,11 @@ public class PostBlindPractice extends Practice {
             player.refreshPositionAndAngles(overworldPos,90,0);
             resetPlayer(player);
             getInventory(player, "postblind");
-            if(SpeedrunPractice.config.randomisePostBlindInventory)Practice.populatePostBlindInventory(player, finalSeed);
+            if(SpeedrunPractice.config.randomisePostBlindInventory) populatePostBlindInventory(player, finalSeed);
             player.changeDimension(overworld);
-            Practice.startSpeedrunIGTTimer();
+            startSpeedrunIGTTimer();
         });
+        MinecraftClient.getInstance().submit(Practice::resetScreen);
         return 1;
     }
 

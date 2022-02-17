@@ -7,7 +7,6 @@
   "authors": [],
   "contact": {},
   "license": "MIT",
-  "icon": "assets/SpeedrunPractice/icon.png",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -19,7 +18,8 @@
   ],
   "depends": {
     "fabricloader": ">=0.12.12",
-    "minecraft": "1.16.1"
+    "minecraft": "1.16.1",
+    "java": ">=16"
   },
   "breaks": {
     "lazystronghold": "<1.1.0"
