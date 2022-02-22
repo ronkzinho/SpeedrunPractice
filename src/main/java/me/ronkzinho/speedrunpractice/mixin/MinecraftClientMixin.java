@@ -30,8 +30,7 @@ public abstract class MinecraftClientMixin {
     }
 
     public void selectWorld(String worldName){
-        SpeedrunPractice.worldName = worldName;
-        SpeedrunPractice.selectingWorldParent.setForced(true);
+        SpeedrunPractice.selectingWorldParent.profile.worldName = worldName;
         this.openScreen(SpeedrunPractice.selectingWorldParent);
     }
 

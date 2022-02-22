@@ -75,6 +75,10 @@ public abstract class MinecraftServerMixin implements IMinecraftServer {
     private final List<PracticeWorld> endPracticeWorlds = new ArrayList<>();
     private final List<Map<RegistryKey<DimensionType>,PracticeWorld>> linkedPracticeWorlds = new ArrayList<>();
 
+    public List<Map<RegistryKey<DimensionType>,PracticeWorld>> getLinkedPracticeWorlds(){
+        return linkedPracticeWorlds;
+    }
+
     public PracticeWorld createEndPracticeWorld(long seed,RegistryKey<World> worldRegistryKey) throws IOException {
         PracticeWorld endPracticeWorld = createPracticeWorld(seed, worldRegistryKey, DimensionType.THE_END_REGISTRY_KEY,World.OVERWORLD,World.NETHER,World.END);
         this.worlds.put(worldRegistryKey,endPracticeWorld);

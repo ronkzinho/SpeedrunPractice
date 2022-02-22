@@ -24,9 +24,8 @@ import java.util.Random;
 
 public class PostBlindPractice extends Practice {
     @Override
-    public int run(long seed) {
+    public int run(long seed, MinecraftServer server) {
         int maxDist = SpeedrunPractice.config.defaultMaxDist;
-        MinecraftServer server = MinecraftClient.getInstance().getServer();
         ServerPlayerEntity player = server.getPlayerManager().getPlayerList().get(0);
         Map<RegistryKey<DimensionType>, PracticeWorld> linkedPracticeWorld = null;
         try {
@@ -34,7 +33,7 @@ public class PostBlindPractice extends Practice {
         } catch (IOException e) {
             return 0;
         }
-        MinecraftClient.getInstance().submit(() -> MinecraftClient.getInstance().method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.practiceworld"))));
+        enteringPracticeWorld();
         server.getCommandManager().execute(server.getCommandSource().withSilent(),"/advancement revoke @a everything");
         PracticeWorld overworld = linkedPracticeWorld.get(DimensionType.OVERWORLD_REGISTRY_KEY);
         if(SpeedrunPractice.config.postBlindSpawnChunks)

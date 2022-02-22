@@ -1,7 +1,7 @@
 package me.ronkzinho.speedrunpractice.mixin;
 
-import me.ronkzinho.speedrunpractice.screens.QuickSettingsScreen;
 import me.ronkzinho.speedrunpractice.SpeedrunPractice;
+import me.ronkzinho.speedrunpractice.screens.QuickSettingsScreen;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.SaveLevelScreen;
 import net.minecraft.client.gui.screen.Screen;
@@ -55,7 +55,7 @@ public abstract class OptionsScreenMixin extends Screen {
             }));
 
             quickSettingsButton = this.addButton(SpeedrunPractice.quickSettingsButton(this.width / 2 - 180, this.height / 6 + 42, button -> {
-                this.client.openScreen(new QuickSettingsScreen(this, true));
+                this.client.openScreen(new QuickSettingsScreen(this));
             }));
         }
     }

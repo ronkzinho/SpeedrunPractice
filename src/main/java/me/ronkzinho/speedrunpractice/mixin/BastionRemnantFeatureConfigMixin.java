@@ -20,6 +20,7 @@ public class BastionRemnantFeatureConfigMixin {
 
     @Inject(method = "<init>(Ljava/util/List;)V",at=@At("TAIL"))
     private void modifyPossibleConfigs(CallbackInfo ci){
+        if(!SpeedrunPractice.isPlaying) return;
         this.possibleConfigs= SpeedrunPractice.possibleBastionConfigs;
     }
 }

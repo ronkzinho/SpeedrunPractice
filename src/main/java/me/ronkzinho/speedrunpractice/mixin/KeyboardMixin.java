@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class KeyboardMixin {
     @Redirect(method="processF3",at=@At(value="INVOKE",target = "Lnet/minecraft/world/World;getRegistryKey()Lnet/minecraft/util/registry/RegistryKey;"))
     private RegistryKey<World> resolveF3AndCWorld(World world){
-        if(SpeedrunPractice.config.calcMode) {
+        if(SpeedrunPractice.config.calcMode && SpeedrunPractice.isPlaying) {
             return PracticeWorld.dimensionToVanillaWorldKey.get(world.getDimension());
         }else{
             return world.getRegistryKey();

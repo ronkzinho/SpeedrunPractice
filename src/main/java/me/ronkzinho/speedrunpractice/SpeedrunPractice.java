@@ -5,8 +5,10 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import me.ronkzinho.speedrunpractice.command.Command;
+import me.ronkzinho.speedrunpractice.config.ProfileConfig;
 import me.ronkzinho.speedrunpractice.practice.*;
 import me.ronkzinho.speedrunpractice.config.ModConfig;
+import me.ronkzinho.speedrunpractice.screens.ProfileScreen;
 import me.ronkzinho.speedrunpractice.screens.QuickSettingsScreen;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
@@ -17,6 +19,7 @@ import net.fabricmc.loader.impl.util.version.SemanticVersionImpl;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.SaveLevelScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
@@ -39,11 +42,10 @@ import java.util.List;
 import static java.lang.Math.ceil;
 
 public class SpeedrunPractice implements ModInitializer {
+    public static String MOD_ID = "speedrun-practice";
     public static ModConfig config;
-    public static String worldName;
-    public static QuickSettingsScreen selectingWorldParent;
-    public static PracticeMode practiceMode = PracticeMode.END;
-    public static String practiceSeedText;
+    public static ProfileScreen selectingWorldParent;
+    public static ProfileConfig profileConfig = ProfileConfig.load();
     public static final Identifier BUTTON_ICON_TEXTURE = new Identifier("textures/item/golden_carrot.png");
     public static Map<StructureFeature<?>, StructureConfig> overworldStructures = Maps.newHashMap(StructuresConfig.DEFAULT_STRUCTURES);
     public static Map<StructureFeature<?>, StructureConfig> netherStructures = Maps.newHashMap(StructuresConfig.DEFAULT_STRUCTURES);
@@ -51,7 +53,7 @@ public class SpeedrunPractice implements ModInitializer {
     public static SpeedrunPracticeRandom random = new SpeedrunPracticeRandom();
     public static boolean welcomeShown = false;
     private static Gson gson = new Gson();
-    private static final ModContainer modContainer = FabricLoader.getInstance().getModContainer("speedrun-practice").get();
+    private static final ModContainer modContainer = FabricLoader.getInstance().getModContainer(MOD_ID).get();
     private static final String donationLink = "https://ko-fi.com/gregor0410";
     private static final Version version = modContainer.getMetadata().getVersion();
     public static AutoSaveStater autoSaveStater = new AutoSaveStater();
@@ -71,6 +73,7 @@ public class SpeedrunPractice implements ModInitializer {
         config = ModConfig.load();
         update();
         Command.registerCommands();
+        profileConfig.addDefaults();
     }
 
     public static void sendWelcomeMessage(ServerPlayerEntity player) throws IOException, VersionParsingException {
@@ -122,13 +125,22 @@ public class SpeedrunPractice implements ModInitializer {
         return new ButtonWidget(x, y, 20, 20, new LiteralText(""), onPress);
     }
 
+    public static ProfileConfig.Profile getCurrentProfile(){
+        return profileConfig.selected != null ? profileConfig.profiles.get(profileConfig.selected) : null;
+    }
+
     public static void practice(){
+        System.out.println(String.join(", ", profileConfig.profiles.stream().map(profile -> profile.name).toArray(String[]::new)));
         MinecraftClient client = MinecraftClient.getInstance();
         Objects.requireNonNull(client.getServer()).getPlayerManager().getPlayerList().forEach(player -> player.setGameMode(GameMode.SURVIVAL));
         client.submit(() -> {
-            client.method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.practiceworld")));
+            client.method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.creatingpracticeworld")));
         });
-        practiceMode.getPracticeClass().run();
+        client.getServer().submit(() -> {
+            try {
+                Objects.requireNonNull(getCurrentProfile()).getMode().getPracticeClass().getConstructor().newInstance().run();
+            } catch (Exception ignored){}
+         });
     }
 
     public enum DragonType{
@@ -138,21 +150,23 @@ public class SpeedrunPractice implements ModInitializer {
     }
 
     public enum PracticeMode{
-        END(0, "speedrun-practice.quicksettings.modes.end", "end", new EndPractice()),
-        NETHER(1, "speedrun-practice.quicksettings.modes.nether", "nether", new NetherPractice()),
-        OVERWORLD(2, "speedrun-practice.quicksettings.modes.overworld", "overworld", new OverworldPractice()),
-        POSTBLIND(3, "speedrun-practice.quicksettings.modes.postblind", "postblind", new PostBlindPractice());
+        END(0, "speedrun-practice.modes.end", "end", new Identifier("textures/block/end_portal_frame_top.png"), EndPractice.class),
+        NETHER(1, "speedrun-practice.modes.nether", "nether", new Identifier("textures/block/netherrack.png"), NetherPractice.class),
+        OVERWORLD(2, "speedrun-practice.modes.overworld", "overworld", new Identifier("textures/block/grass_block_side.png"), OverworldPractice.class),
+        POSTBLIND(3, "speedrun-practice.modes.postblind", "postblind", new Identifier("textures/item/ender_eye.png"), PostBlindPractice.class);
 
         private static final PracticeMode[] VALUES;
         private final int id;
         private final String translationKey;
-        private final Practice practiceClass;
-        private String simplifiedName;
+        private final Class<? extends Practice> practiceClass;
+        private final String simplifiedName;
+        private final Identifier iconId;
 
-        PracticeMode(int id, String translationKey, String simplifiedName, Practice practiceClass) {
+        <T extends Practice> PracticeMode(int id, String translationKey, String simplifiedName, Identifier iconId, Class<T> practiceClass) {
             this.id = id;
             this.translationKey = translationKey;
             this.simplifiedName = simplifiedName;
+            this.iconId = iconId;
             this.practiceClass = practiceClass;
         }
 
@@ -168,12 +182,20 @@ public class SpeedrunPractice implements ModInitializer {
             return PracticeMode.byId(this.getId() + 1);
         }
 
-        public Practice getPracticeClass(){
+        public Class<? extends Practice> getPracticeClass(){
             return this.practiceClass;
         }
 
         public String getSimplifiedName(){
             return this.simplifiedName;
+        }
+
+        public Identifier getIconId(){
+            return this.iconId;
+        }
+
+        public static PracticeMode fromSimplifiedName(String simplifiedName){
+            return Arrays.stream(VALUES).filter(value -> Objects.equals(value.getSimplifiedName(), simplifiedName)).findFirst().orElse(null);
         }
 
         public static PracticeMode byId(int id) {

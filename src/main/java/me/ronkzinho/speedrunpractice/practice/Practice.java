@@ -8,6 +8,7 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.SaveLevelScreen;
 import net.minecraft.client.gui.screen.world.MoreOptionsDialog;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EquipmentSlot;
@@ -22,6 +23,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
@@ -46,9 +48,9 @@ public abstract class Practice {
     public int run(){
         OptionalLong seed;
         OptionalLong optionalLong2;
-        String string = SpeedrunPractice.practiceSeedText;
+        String string = SpeedrunPractice.getCurrentProfile().seedText;
         seed = StringUtils.isEmpty(string) ? OptionalLong.empty() : ((optionalLong2 = tryParseLong(string)).isPresent() && optionalLong2.getAsLong() != 0L ? optionalLong2 : OptionalLong.of(string.hashCode()));
-        return this.run(seed.isPresent() ? seed.getAsLong() : SpeedrunPractice.random.nextLong());
+        return this.run(seed.isPresent() ? seed.getAsLong() : SpeedrunPractice.random.nextLong(), MinecraftClient.getInstance().getServer());
     }
 
     private static OptionalLong tryParseLong(String string) {
@@ -61,7 +63,7 @@ public abstract class Practice {
     }
 
 
-    abstract public int run(long seed);
+    abstract public int run(long seed, MinecraftServer server);
 
     public static int setSlot(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
         String result = setSlot(IntegerArgumentType.getInteger(ctx,"slot"), ctx.getNodes().get(2).getNode().getName(), ctx.getSource().getPlayer(), 1);
@@ -75,9 +77,11 @@ public abstract class Practice {
     public static String setSlot(int slot, String key, ServerPlayerEntity player, int mode){
         String text = String.format(Language.getInstance().get("speedrun-practice.inventorymanagement.options.slot.set"), key,slot);
         if(mode == 1) player.sendMessage(new LiteralText(text),false);
-        SpeedrunPractice.config.practiceSlots.put(key,slot-1);
+        SpeedrunPractice.profileConfig.profiles.forEach(profile -> {
+            profile.inventorySlot = slot;
+        });
         try {
-            SpeedrunPractice.config.save();
+            SpeedrunPractice.profileConfig.save();
         } catch (IOException e) {
             return null;
         }
@@ -121,10 +125,14 @@ public abstract class Practice {
         MinecraftClient.getInstance().mouse.lockCursor();
     }
 
-    public static void getInventory(ServerPlayerEntity player, String key) {
+    public static void getInventory(ServerPlayerEntity player, String key){
+        getInventory(player, key, SpeedrunPractice.getCurrentProfile().inventorySlot);
+    }
+
+    public static void getInventory(ServerPlayerEntity player, String key, int slot) {
         player.inventory.clear();
         player.playerScreenHandler.sendContentUpdates();
-        List<String> inventoryStringList = SpeedrunPractice.config.practiceInventories.get(key).get(SpeedrunPractice.config.practiceSlots.get(key));
+        List<String> inventoryStringList = SpeedrunPractice.config.practiceInventories.get(key).get(slot);
         if(inventoryStringList!=null) {
             List<CompoundTag> inventoryTagList = inventoryStringList.stream().map(tag -> {
                 try {
@@ -162,10 +170,8 @@ public abstract class Practice {
     }
 
     public static int seed(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        String seed = SpeedrunPractice.practiceSeedText != null ? SpeedrunPractice.practiceSeedText : String.valueOf(SpeedrunPractice.random.getSeed());
-        Text text = Texts.bracketed((new LiteralText(seed)).styled((style) -> {
-            return style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, String.valueOf(seed))).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("chat.copy.click"))).withInsertion(String.valueOf(seed));
-        }));
+        String seed = SpeedrunPractice.getCurrentProfile() != null && SpeedrunPractice.getCurrentProfile().seedText != null ? SpeedrunPractice.getCurrentProfile().seedText : String.valueOf(SpeedrunPractice.random.getSeed());
+        Text text = Texts.bracketed((new LiteralText(seed)).styled((style) -> style.withColor(Formatting.GREEN).withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, String.valueOf(seed))).setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableText("chat.copy.click"))).withInsertion(String.valueOf(seed))));
         ctx.getSource().getPlayer().sendMessage(text,false);
         return 1;
     }
@@ -195,5 +201,9 @@ public abstract class Practice {
         playerAccess.setSpawnPointDimension(overworld.getRegistryKey());
         playerAccess.setSpawnPointPosition(null);
         playerAccess.setSpawnPointSet(false);
+    }
+
+    public static void enteringPracticeWorld(){
+        MinecraftClient.getInstance().submit(() -> MinecraftClient.getInstance().method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.enteringpracticeworld"))));
     }
 }

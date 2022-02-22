@@ -19,14 +19,14 @@ import java.util.Map;
 
 public class NetherPractice extends Practice {
     @Override
-    public int run(long seed){
-        MinecraftServer server = MinecraftClient.getInstance().getServer();
+    public int run(long seed, MinecraftServer server){
         Map<RegistryKey<DimensionType>, PracticeWorld> linkedPracticeWorld = null;
         try {
             linkedPracticeWorld = ((IMinecraftServer) server).createLinkedPracticeWorld(seed);
         } catch (IOException e) {
             return 0;
         }
+        enteringPracticeWorld();
         ServerPlayerEntity player = server.getPlayerManager().getPlayerList().get(0);
         PracticeWorld overworld = linkedPracticeWorld.get(DimensionType.OVERWORLD_REGISTRY_KEY);
         PracticeWorld nether = linkedPracticeWorld.get(DimensionType.THE_NETHER_REGISTRY_KEY);

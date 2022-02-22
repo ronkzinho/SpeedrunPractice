@@ -26,7 +26,7 @@ public class InventoryManagementOptions {
     int y;
     int spacingY;
     protected final HashMap<String, Integer> slot = new HashMap<>();
-    public SpeedrunPractice.PracticeMode profile = SpeedrunPractice.practiceMode;
+    public SpeedrunPractice.PracticeMode profile = SpeedrunPractice.PracticeMode.END;
     public ButtonWidget profileCycle;
     public ButtonWidget slotCycle;
     public ButtonWidget saveSlot;
@@ -59,7 +59,7 @@ public class InventoryManagementOptions {
             parent.setMessage(new TranslatableText(text != null ? text : "speedrun-practice.inventorymanagement.fail"));
         }));
 
-        this.setSlot = this.addToAll(new ButtonWidget(x, spacingY * 2 + y, width, height, new TranslatableText("speedrun-practice.inventorymanagement.options.select"), button -> {
+        this.setSlot = this.addToAll(new ButtonWidget(x, spacingY * 2 + y, width, height, new TranslatableText("speedrun-practice.inventorymanagement.options.selectToAll"), button -> {
             String text = Practice.setSlot(this.getCurrentSlot(), profile.getSimplifiedName());
             parent.setMessage(new TranslatableText(text != null ? text : "speedrun-practice.inventorymanagement.fail"));
         }));
@@ -70,11 +70,11 @@ public class InventoryManagementOptions {
                 parent.setMessage(new TranslatableText("speedrun-practice.inventorymanagement.fail-reason", "You must be on creative to execute this command."));
                 return;
             };
-            Practice.getInventory(player, profile.getSimplifiedName());
+            Practice.getInventory(player, profile.getSimplifiedName(), this.getCurrentSlot() - 1);
             parent.setMessage(new TranslatableText("speedrun-practice.inventorymanagement.inventory.success", this.getCurrentSlot()));
         }));
 
-        this.done = this.addToAll(new ButtonWidget(x, spacingY * 4 + y, width, height, ScreenTexts.DONE, button -> {
+        this.done = this.addToAll(new ButtonWidget(x, spacingY * (parent.server != null ? 4 : 3) + y, width, height, ScreenTexts.DONE, button -> {
             MinecraftClient.getInstance().openScreen(parent.parent);
         }));
     }
@@ -87,11 +87,11 @@ public class InventoryManagementOptions {
     }
 
     private Text getModeText(SpeedrunPractice.PracticeMode profile) {
-        return new TranslatableText("speedrun-practice.inventorymanagement.options.profile").append(": ").append(new TranslatableText(profile.getTranslationKey()));
+        return new TranslatableText("speedrun-practice.profile").append(": ").append(new TranslatableText(profile.getTranslationKey()));
     }
 
     private Text getCurrentSlotText(int slot){
-        return new TranslatableText("speedrun-practice.inventorymanagement.options.currentSlot").append(": ").append("" + slot);
+        return new TranslatableText("speedrun-practice.currentSlot").append(": ").append("" + slot);
     }
 
     private int getCurrentSlot(){

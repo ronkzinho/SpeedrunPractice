@@ -18,9 +18,7 @@ import java.util.Map;
 
 public class OverworldPractice extends Practice {
     @Override
-    public int run(long seed) {
-        MinecraftClient client = MinecraftClient.getInstance();
-        MinecraftServer server = client.getServer();
+    public int run(long seed, MinecraftServer server) {
         ServerPlayerEntity player = server.getPlayerManager().getPlayerList().get(0);
         Map<RegistryKey<DimensionType>, PracticeWorld> linkedPracticeWorld = null;
         try {
@@ -28,6 +26,7 @@ public class OverworldPractice extends Practice {
         } catch (IOException e) {
             return 0;
         }
+        enteringPracticeWorld();
         player.inventory.clear();
         server.getCommandManager().execute(server.getCommandSource().withSilent(),"/advancement revoke @a everything");
         PracticeWorld overworld = linkedPracticeWorld.get(DimensionType.OVERWORLD_REGISTRY_KEY);

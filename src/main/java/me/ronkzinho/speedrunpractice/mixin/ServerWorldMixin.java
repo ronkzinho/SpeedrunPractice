@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ServerWorldMixin {
     @Inject(method="createEndSpawnPlatform",at=@At("TAIL"))
     private static void eliminateCageSpawns(ServerWorld world, CallbackInfo ci){
+        if(!SpeedrunPractice.isPlaying) return;
         if(!SpeedrunPractice.config.eliminateCageSpawns) return;
         int x = ServerWorld.END_SPAWN_POS.getX();
         int z = ServerWorld.END_SPAWN_POS.getZ();

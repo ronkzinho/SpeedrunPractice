@@ -13,6 +13,7 @@ import java.util.Random;
 public class SpikeCacheMixin {
     @Redirect(method="load(Ljava/lang/Long;)Ljava/util/List;",at=@At(value="INVOKE",target="Ljava/util/Collections;shuffle(Ljava/util/List;Ljava/util/Random;)V"))
     private void modifyTowerOrder(List<Integer> towers, Random random){
+        if(!SpeedrunPractice.isPlaying) return;
         Collections.shuffle(towers,random);
         SpeedrunPractice.DragonType dragonType = SpeedrunPractice.config.dragonType.equals(SpeedrunPractice.DragonType.BOTH) ? getDragonType(towers) : SpeedrunPractice.config.dragonType;
         if(SpeedrunPractice.config.endTowers.stream().anyMatch(a-> a)) {

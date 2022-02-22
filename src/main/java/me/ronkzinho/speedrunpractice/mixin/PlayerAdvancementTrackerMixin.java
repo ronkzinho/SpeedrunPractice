@@ -16,7 +16,7 @@ public class PlayerAdvancementTrackerMixin {
 
     @Inject(method = "grantCriterion",at=@At("HEAD"))
     private void onGrantCriterion(Advancement advancement, String criterionName, CallbackInfoReturnable<Boolean> cir){
-        if(SpeedrunPractice.autoSaveStater!=null) {
+        if(SpeedrunPractice.autoSaveStater!=null && SpeedrunPractice.isPlaying) {
             SpeedrunPractice.autoSaveStater.onGrantCriterion(advancement, criterionName, this.owner.getServer());
         }
     }

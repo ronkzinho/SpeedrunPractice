@@ -2,7 +2,6 @@ package me.ronkzinho.speedrunpractice.mixin;
 
 import me.ronkzinho.speedrunpractice.SpeedrunPractice;
 import me.ronkzinho.speedrunpractice.world.PracticeWorld;
-import net.fabricmc.loader.api.VersionParsingException;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.server.MinecraftServer;
@@ -18,7 +17,6 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.io.IOException;
 import java.util.List;
 
 @Mixin(PlayerManager.class)
@@ -41,11 +39,11 @@ public class PlayerManagerMixin {
     private void showWelcomeMessage(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci){
         if(SpeedrunPractice.selectingWorldParent != null){
             MinecraftClient.getInstance().submit(() -> {
-                SpeedrunPractice.selectingWorldParent.setForced(true);
-                SpeedrunPractice.selectingWorldParent.setCustomDone(button -> {
+                SpeedrunPractice.selectingWorldParent.setCustomStartPracticing(button -> {
                     SpeedrunPractice.isPlaying = true;
                     welcome(player);
                 });
+                SpeedrunPractice.selectingWorldParent.setShouldCloseOnEsc(false);
                 SpeedrunPractice.selectingWorldParent.server = this.server;
                 MinecraftClient.getInstance().openScreen(SpeedrunPractice.selectingWorldParent);
             });

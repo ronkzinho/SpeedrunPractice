@@ -17,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class BastionRemnantFeatureMixin {
     @Inject(method="shouldStartAt(Lnet/minecraft/world/gen/chunk/ChunkGenerator;Lnet/minecraft/world/biome/source/BiomeSource;JLnet/minecraft/world/gen/ChunkRandom;IILnet/minecraft/world/biome/Biome;Lnet/minecraft/util/math/ChunkPos;Lnet/minecraft/world/gen/feature/BastionRemnantFeatureConfig;)Z",cancellable = true,at=@At("HEAD"))
     private void shouldStartAt(ChunkGenerator chunkGenerator, BiomeSource biomeSource, long l, ChunkRandom chunkRandom, int i, int j, Biome biome, ChunkPos chunkPos, BastionRemnantFeatureConfig bastionRemnantFeatureConfig,CallbackInfoReturnable<Boolean> cir){
+        if(!SpeedrunPractice.isPlaying) return;
         if(!(SpeedrunPractice.config.bridge||SpeedrunPractice.config.housing||SpeedrunPractice.config.treasure||SpeedrunPractice.config.stables)){
             cir.setReturnValue(false);
         }else if(SpeedrunPractice.config.bastionRarity == 60){

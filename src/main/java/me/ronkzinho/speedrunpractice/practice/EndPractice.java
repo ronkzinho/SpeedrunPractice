@@ -10,14 +10,14 @@ import net.minecraft.world.World;
 
 public class EndPractice extends Practice{
     @Override
-    public int run(long seed) {
-        MinecraftServer server = MinecraftClient.getInstance().getServer();
+    public int run(long seed, MinecraftServer server) {
         ServerWorld world = null;
         //reset dragon fight data
         server.getSaveProperties().method_29037(new CompoundTag());
         ServerPlayerEntity player = server.getPlayerManager().getPlayerList().get(0);
         try {
             world = ((IMinecraftServer)server).createEndPracticeWorld(seed);
+            enteringPracticeWorld();
             player.setSpawnPoint(World.OVERWORLD,null,false,false);
             ServerWorld.createEndSpawnPlatform(world);
             resetPlayer(player);

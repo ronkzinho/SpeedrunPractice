@@ -1,5 +1,6 @@
 package me.ronkzinho.speedrunpractice.mixin;
 
+import me.ronkzinho.speedrunpractice.SpeedrunPractice;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ChunkHolder;
 import net.minecraft.server.world.ServerWorld;
@@ -30,6 +31,7 @@ public class PortalForcerMixin {
 
     @Inject(method="createPortal",at=@At("TAIL"))
     private void savePortalChunk(Entity entity, CallbackInfoReturnable<Boolean> cir){
+        if(!SpeedrunPractice.isPlaying) return;
         ChunkHolder chunkHolder = ((ThreadedAnvilChunkStorageAccess) world.getChunkManager().threadedAnvilChunkStorage).getChunkHolders().get(new ChunkPos(this.mutable).toLong());
         CompletableFuture<Chunk> completableFuture = chunkHolder.getFuture();
         do {

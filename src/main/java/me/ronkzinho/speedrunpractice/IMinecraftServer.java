@@ -13,4 +13,5 @@ public interface IMinecraftServer {
     ServerWorld createEndPracticeWorld(long seed) throws IOException;
     Map<RegistryKey<DimensionType>, PracticeWorld> createLinkedPracticeWorld(long seed) throws IOException;
     List<PracticeWorld> getEndPracticeWorlds();
+    List<Map<RegistryKey<DimensionType>,PracticeWorld>> getLinkedPracticeWorlds();
 }
