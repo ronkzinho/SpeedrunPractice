@@ -43,8 +43,7 @@ public class PlayerManagerMixin {
                     SpeedrunPractice.isPlaying = true;
                     welcome(player);
                 });
-                SpeedrunPractice.selectingWorldParent.setShouldCloseOnEsc(false);
-                SpeedrunPractice.selectingWorldParent.server = this.server;
+                SpeedrunPractice.selectingWorldParent.setServer(this.server);
                 MinecraftClient.getInstance().openScreen(SpeedrunPractice.selectingWorldParent);
             });
         }

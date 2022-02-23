@@ -67,5 +67,6 @@
   "speedrun-practice.selectprofile.recreate": "Re-Create",
   "speedrun-practice.selectprofile.delete": "Delete",
   "speedrun-practice.selectprofile.edit": "Edit",
-  "speedrun-practice.selectprofile": "Select Profile"
+  "speedrun-practice.selectprofile": "Select Profile",
+  "speedrun-practice.profile.recreate": "Recreate Profile"
 }

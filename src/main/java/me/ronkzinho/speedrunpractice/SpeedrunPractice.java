@@ -130,7 +130,6 @@ public class SpeedrunPractice implements ModInitializer {
     }
 
     public static void practice(){
-        System.out.println(String.join(", ", profileConfig.profiles.stream().map(profile -> profile.name).toArray(String[]::new)));
         MinecraftClient client = MinecraftClient.getInstance();
         Objects.requireNonNull(client.getServer()).getPlayerManager().getPlayerList().forEach(player -> player.setGameMode(GameMode.SURVIVAL));
         client.submit(() -> {

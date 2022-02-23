@@ -55,6 +55,12 @@ public class ProfileScreen extends Screen {
     public void setServer(MinecraftServer server){
         this.setShouldCloseOnEsc(false);
         this.server = server;
+        if(this.parent instanceof QuickSettingsScreen){
+            ((QuickSettingsScreen) this.parent).setServer(this.server);
+        }
+        if(this.parent instanceof SelectProfileScreen){
+            ((SelectProfileScreen) this.parent).parent.setServer(this.server);
+        }
     }
 
     public ProfileScreen(Screen parent){
@@ -154,7 +160,7 @@ public class ProfileScreen extends Screen {
             this.selectWorld.setMessage(this.getSelectWorldText());
         }));
 
-        this.done = this.addButton(new ButtonWidget(x, spacingY * 3 + finalY, bwidth / 2 - 4, bheight, this.profileMode.equals(Mode.EDIT) ? ScreenTexts.DONE : new TranslatableText("speedrun-practice.profile.create"), button -> {
+        this.done = this.addButton(new ButtonWidget(x, spacingY * 3 + finalY, bwidth / 2 - 4, bheight, this.profileMode.equals(Mode.EDIT) ? ScreenTexts.DONE : new TranslatableText("speedrun-practice.profile.recreate"), button -> {
             if(SpeedrunPractice.profileConfig.profiles.stream().noneMatch(p -> EqualsBuilder.reflectionEquals(p, this.profile))){
                 if(this.profileMode.equals(Mode.EDIT)){
                     SpeedrunPractice.profileConfig.profiles.set(this.profileIndex, this.profile);

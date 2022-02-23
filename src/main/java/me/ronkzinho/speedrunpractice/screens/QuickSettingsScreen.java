@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screen.world.SelectWorldScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TexturedButtonWidget;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
@@ -43,10 +44,20 @@ public class QuickSettingsScreen extends Screen {
     private Integer selected = SpeedrunPractice.profileConfig.selected;
     private ButtonWidget deselectProfile;
     private ButtonWidget editProfile;
+    private MinecraftServer server;
 
-    public QuickSettingsScreen(Screen parent) {
+    public void setServer(MinecraftServer server){
+        this.server = server;
+    }
+
+    public QuickSettingsScreen(Screen parent){
+        this(parent, null);
+    }
+
+    public QuickSettingsScreen(Screen parent, MinecraftServer server) {
         super(new TranslatableText("speedrun-practice.quicksettings.title"));
         this.parent = parent;
+        this.server = server;
         this.init();
     }
 
@@ -135,7 +146,7 @@ public class QuickSettingsScreen extends Screen {
         profileCycle.setMessage(this.getProfileText(this.profile));
         deselectProfile.visible = selected != null;
         editProfile.visible = selected != null;
-        startPracticing.active = profile != null && profile.worldName != null;
+        startPracticing.active = profile != null && profile.worldName != null && (this.server == null || this.server.getSaveProperties().getLevelName().equals(profile.worldName));
     }
 
     private Text getProfileText(ProfileConfig.Profile profile) {

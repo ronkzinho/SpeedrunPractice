@@ -55,7 +55,7 @@ public abstract class OptionsScreenMixin extends Screen {
             }));
 
             quickSettingsButton = this.addButton(SpeedrunPractice.quickSettingsButton(this.width / 2 - 180, this.height / 6 + 42, button -> {
-                this.client.openScreen(new QuickSettingsScreen(this));
+                this.client.openScreen(new QuickSettingsScreen(this, this.client.getServer()));
             }));
         }
     }
