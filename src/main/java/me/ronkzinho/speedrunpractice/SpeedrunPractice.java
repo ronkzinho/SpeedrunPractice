@@ -6,10 +6,10 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import me.ronkzinho.speedrunpractice.command.Command;
 import me.ronkzinho.speedrunpractice.config.ProfileConfig;
+import me.ronkzinho.speedrunpractice.mixin.ServerPlayerEntityAccess;
 import me.ronkzinho.speedrunpractice.practice.*;
 import me.ronkzinho.speedrunpractice.config.ModConfig;
 import me.ronkzinho.speedrunpractice.screens.ProfileScreen;
-import me.ronkzinho.speedrunpractice.screens.QuickSettingsScreen;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -19,7 +19,6 @@ import net.fabricmc.loader.impl.util.version.SemanticVersionImpl;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.SaveLevelScreen;
 import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
@@ -33,6 +32,7 @@ import net.minecraft.world.gen.feature.StructurePoolFeatureConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -77,7 +77,7 @@ public class SpeedrunPractice implements ModInitializer {
     }
 
     public static void sendWelcomeMessage(ServerPlayerEntity player) throws IOException, VersionParsingException {
-        player.sendMessage(new LiteralText(String.format("[SpeedrunPractice v%s by Gregor0410]",version)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x00ff00))),false);
+        player.sendMessage(new LiteralText(String.format("[SpeedrunPractice v%s by ronkzinho & Gregor0410]",version)).setStyle(Style.EMPTY.withColor(TextColor.fromRgb(0x00ff00))),false);
         player.sendMessage(new LiteralText("[Donation Link]")
                 .setStyle(Style.EMPTY.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL,donationLink))
                 .setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,new LiteralText("Click"))))
@@ -131,7 +131,7 @@ public class SpeedrunPractice implements ModInitializer {
 
     public static void practice(){
         MinecraftClient client = MinecraftClient.getInstance();
-        Objects.requireNonNull(client.getServer()).getPlayerManager().getPlayerList().forEach(player -> player.setGameMode(GameMode.SURVIVAL));
+        if(client.getServer() == null) return;
         client.submit(() -> {
             client.method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.creatingpracticeworld")));
         });
@@ -140,11 +140,34 @@ public class SpeedrunPractice implements ModInitializer {
                 Objects.requireNonNull(getCurrentProfile()).getMode().getPracticeClass().getConstructor().newInstance().run();
             } catch (Exception ignored){}
          });
+        Practice.resetScreen();
     }
 
     public enum DragonType{
-        FRONT,
-        BACK,
+        /*
+        12 11(x 40, z 0) - front normal
+        16 3(x -40, z 0) - back normal
+
+        12 7(x 40, z 0) - front 1/8
+        16 11(x -40 z 0) - back 1/8
+        * */
+        FRONT(12, 11, 7),
+        BACK(16, 3, 11),
+        BOTH(null, null, null);
+
+        public final Integer node;
+
+        DragonType(Integer node, Integer diagonal, Integer straight){
+            this.node = node;
+            nodes.put(this, Arrays.asList(diagonal, straight, null));
+        }
+    }
+
+    public static HashMap<DragonType, List<Integer>> nodes = new HashMap<>();
+
+    public enum NodePosition{
+        DIAGONAL,
+        STRAIGHT,
         BOTH
     }
 

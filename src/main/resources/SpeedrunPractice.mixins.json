@@ -12,6 +12,7 @@
     "EnderDragonFightAccess",
     "EndPortalBlockMixin",
     "EntityMixin",
+    "HoldingPatternPhaseMixin",
     "KeyboardMixin",
     "LevelPropertiesAccess",
     "MinecraftClientMixin",

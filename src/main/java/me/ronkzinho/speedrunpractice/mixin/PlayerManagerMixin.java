@@ -38,12 +38,11 @@ public class PlayerManagerMixin {
     @Inject(method = "onPlayerConnect",at=@At("TAIL"))
     private void showWelcomeMessage(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci){
         if(SpeedrunPractice.selectingWorldParent != null){
+            SpeedrunPractice.selectingWorldParent.setCustomStartPracticing(button -> {
+                SpeedrunPractice.isPlaying = true;
+                welcome(player);
+            });
             MinecraftClient.getInstance().submit(() -> {
-                SpeedrunPractice.selectingWorldParent.setCustomStartPracticing(button -> {
-                    SpeedrunPractice.isPlaying = true;
-                    welcome(player);
-                });
-                SpeedrunPractice.selectingWorldParent.setServer(this.server);
                 MinecraftClient.getInstance().openScreen(SpeedrunPractice.selectingWorldParent);
             });
         }

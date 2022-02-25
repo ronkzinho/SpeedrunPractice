@@ -27,7 +27,7 @@ public class DebugHudMixin {
     @Inject(method = "getRightText", at=@At(value = "TAIL"))
     private void getLeftTextMixin(CallbackInfoReturnable<List<String>> cir){
         if(SpeedrunPractice.isPlaying){
-            cir.getReturnValue().add("\n");
+            cir.getReturnValue().add("");
             cir.getReturnValue().add("SpeedRun Practice is currently active.");
         }
     }

@@ -1,5 +1,6 @@
 package me.ronkzinho.speedrunpractice.screens;
 
+import me.ronkzinho.speedrunpractice.IMinecraftServer;
 import me.ronkzinho.speedrunpractice.SpeedrunPractice;
 import me.ronkzinho.speedrunpractice.config.ProfileConfig;
 import net.minecraft.client.MinecraftClient;
@@ -16,6 +17,8 @@ import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.level.storage.LevelStorage;
+import net.minecraft.world.level.storage.LevelStorageException;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
@@ -30,8 +33,6 @@ public class QuickSettingsScreen extends Screen {
     public int spacingY = 24;
     private boolean forced = false;
     protected ButtonWidget.PressAction customStartPracticing = null;
-    int profileNum = SpeedrunPractice.profileConfig.profiles.indexOf(SpeedrunPractice.getCurrentProfile());
-    protected String seedText;
     protected ProfileConfig.Profile profile = SpeedrunPractice.getCurrentProfile();
     public Screen parent;
     public ButtonWidget profileCycle;
@@ -45,10 +46,6 @@ public class QuickSettingsScreen extends Screen {
     private ButtonWidget deselectProfile;
     private ButtonWidget editProfile;
     private MinecraftServer server;
-
-    public void setServer(MinecraftServer server){
-        this.server = server;
-    }
 
     public QuickSettingsScreen(Screen parent){
         this(parent, null);
@@ -69,9 +66,9 @@ public class QuickSettingsScreen extends Screen {
     protected void init() {
         super.init();
         if(this.parent instanceof SelectWorldScreen) profile.worldName = null;
-        SpeedrunPractice.selectingWorldParent = null;
         this.x = (this.width / 2) - (250 / 2);
         this.y =  (this.height / 2) - (spacingY * 2);
+        this.server = this.client != null ? this.client.getServer() : null;
         this.initAll();
         this.initLogic();
     }
@@ -113,8 +110,6 @@ public class QuickSettingsScreen extends Screen {
         }));
 
         this.startPracticing = this.addButton(new ButtonWidget( x, spacingY * 3 + y, bwidth / 2 - 4, bheight, this.client != null && this.client.world != null ? ScreenTexts.DONE : new TranslatableText("speedrun-practice.startpracticing"), customStartPracticing != null ? customStartPracticing : button -> {
-            assert SpeedrunPractice.getCurrentProfile() != null;
-
             SpeedrunPractice.profileConfig.selected = selected;
 
             if(this.client.world != null){
@@ -123,30 +118,50 @@ public class QuickSettingsScreen extends Screen {
                 return;
             }
 
-            SpeedrunPractice.isPlaying = true;
-            this.client.method_29970(new SaveLevelScreen(new TranslatableText("selectWorld.data_read")));
-            this.client.startIntegratedServer(SpeedrunPractice.getCurrentProfile().worldName);
+            this.startPracticeSession();
         }));
 
         this.cancel = this.addButton(new ButtonWidget(startPracticing.x + startPracticing.getWidth() + 10, startPracticing.y, bwidth / 2 - 4, bheight, ScreenTexts.CANCEL, button -> {
             if(this.selected == null) SpeedrunPractice.isPlaying = false;
-            this.client.openScreen((this.client.world != null) ? null : this.parent);
+            this.client.openScreen(this.parent);
         }));
     }
 
     protected void initLogic(){
         if(this.client == null) return;
         if (this.profile != null && this.profile.worldName != null && forced) {
-            SpeedrunPractice.isPlaying = true;
-            this.client.method_29970(new SaveLevelScreen(new TranslatableText("selectWorld.data_read")));
-            this.client.startIntegratedServer(this.profile.worldName);
+           this.startPracticeSession();
         }
 
         profileCycle.setWidth(getProfileWidth());
         profileCycle.setMessage(this.getProfileText(this.profile));
         deselectProfile.visible = selected != null;
         editProfile.visible = selected != null;
-        startPracticing.active = profile != null && profile.worldName != null && (this.server == null || this.server.getSaveProperties().getLevelName().equals(profile.worldName));
+        startPracticing.active = profile != null && profile.worldName != null && (this.server == null || ((IMinecraftServer) server).getSession().getDirectoryName().equals(profile.worldName));
+    }
+
+    private void startPracticeSession() {
+        try {
+            LevelStorage levelStorage = this.client.getLevelStorage();
+            levelStorage.getLevelList();
+            if(levelStorage.levelExists(this.profile.worldName)){
+                SpeedrunPractice.isPlaying = true;
+                this.client.method_29970(new SaveLevelScreen(new TranslatableText("selectWorld.data_read")));
+                this.client.startIntegratedServer(this.profile.worldName);
+            }
+            else{
+                this.noWorld();
+            }
+        } catch (LevelStorageException ignored) {
+            this.noWorld();
+        }
+    }
+
+    private void noWorld() {
+        this.forced = false;
+        ProfileScreen profileScreen = new ProfileScreen(this, this.profile, ProfileScreen.Mode.EDIT, SpeedrunPractice.profileConfig.profiles.indexOf(this.profile));
+        this.client.openScreen(profileScreen);
+        profileScreen.setInitialFocus(profileScreen.selectWorld);
     }
 
     private Text getProfileText(ProfileConfig.Profile profile) {
@@ -164,5 +179,9 @@ public class QuickSettingsScreen extends Screen {
 
     public void setCloseOnEsc(boolean closeOnEsc) {
         this.closeOnEsc = closeOnEsc;
+    }
+
+    public void setInitialParent(Screen screen) {
+        this.parent = screen;
     }
 }

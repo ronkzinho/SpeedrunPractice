@@ -49,14 +49,6 @@ public class SelectProfileScreen extends Screen {
         this.initWidgets();
     }
 
-    public void setCustomStartPracticing(ButtonWidget.PressAction onPress){
-        this.parent.customStartPracticing = onPress;
-    }
-
-    public void setCloseOnEsc(boolean closeOnEsc){
-        this.parent.setCloseOnEsc(closeOnEsc);
-    }
-
     private void initWidgets() {
         this.searchBox = new TextFieldWidget(this.textRenderer, this.width / 2 - 100, 22, 200, 20, this.searchBox, new TranslatableText("speedrun-practice.selectprofile.search"));
         this.searchBox.setChangedListener(string -> this.profiles.filter(() -> string, false));
@@ -64,7 +56,7 @@ public class SelectProfileScreen extends Screen {
         this.searchBox = new TextFieldWidget(this.textRenderer, this.width / 2 - 100, 22, 200, 20, this.searchBox, new TranslatableText("speedrun-practice.selectprofile.search"));
         this.searchBox.setChangedListener(string -> this.profiles.filter(() -> string, false));
         this.selectButton = this.addButton(new ButtonWidget(this.width / 2 - 154, this.height - 52, 150, 20, new TranslatableText("speedrun-practice.selectprofile.select"), buttonWidget -> this.profiles.getSelectedEntry().ifPresent(ProfileListWidget.ProfileEntry::select)));
-        this.addButton(new ButtonWidget(this.width / 2 + 4, this.height - 52, 150, 20, new TranslatableText("speedrun-practice.selectprofile.create"), buttonWidget -> this.client.openScreen(new ProfileScreen(this, new ProfileConfig.Profile(null, SpeedrunPractice.PracticeMode.END, null, null), SpeedrunPractice.profileConfig.profiles.size()))));
+        this.addButton(new ButtonWidget(this.width / 2 + 4, this.height - 52, 150, 20, new TranslatableText("speedrun-practice.selectprofile.create"), buttonWidget -> this.client.openScreen(new ProfileScreen(this, new ProfileConfig.Profile(null, SpeedrunPractice.PracticeMode.END, null, null), ProfileScreen.Mode.CREATE, SpeedrunPractice.profileConfig.profiles.size()))));
         this.editButton = this.addButton(new ButtonWidget(this.width / 2 - 154, this.height - 28, 72, 20, new TranslatableText("speedrun-practice.selectprofile.edit"), buttonWidget -> this.profiles.getSelectedEntry().ifPresent(ProfileListWidget.ProfileEntry::edit)));
         this.deleteButton = this.addButton(new ButtonWidget(this.width / 2 - 76, this.height - 28, 72, 20, new TranslatableText("speedrun-practice.selectprofile.delete"), buttonWidget -> this.profiles.getSelectedEntry().ifPresent(ProfileListWidget.ProfileEntry::delete)));
         this.recreateButton = this.addButton(new ButtonWidget(this.width / 2 + 4, this.height - 28, 72, 20, new TranslatableText("speedrun-practice.selectprofile.recreate"), buttonWidget -> this.profiles.getSelectedEntry().ifPresent(ProfileListWidget.ProfileEntry::recreate)));
@@ -88,6 +80,7 @@ public class SelectProfileScreen extends Screen {
         this.drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 8, 0xFFFFFF);
         super.render(matrices, mouseX, mouseY, delta);
     }
+
 
     public class ProfileListWidget extends AlwaysSelectedEntryListWidget<ProfileListWidget.ProfileEntry>{
         List<ProfileConfig.Profile> profiles = SpeedrunPractice.profileConfig.profiles;
@@ -113,7 +106,7 @@ public class SelectProfileScreen extends Screen {
                 this.profiles = SpeedrunPractice.profileConfig.profiles;
             }
             AtomicInteger index = new AtomicInteger();
-            this.profiles.stream().filter(profile -> profile.getDisplayName().startsWith(supplier.get())).forEach(profile -> {
+            this.profiles.stream().filter(profile -> profile.getDisplayName().toLowerCase().startsWith(supplier.get().toLowerCase())).forEach(profile -> {
                 this.addEntry(new ProfileEntry(profile, this.client, index));
                 index.getAndIncrement();
             });

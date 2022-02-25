@@ -69,10 +69,6 @@ public class ProfileConfig {
         writer.close();
     }
 
-    public List<Profile> createCachedProfiles() {
-        return Arrays.asList(Arrays.copyOf(this.profiles.stream().map(ProfileConfig.Profile::copy).toArray(ProfileConfig.Profile[]::new), this.profiles.size()));
-    }
-
     public static class Profile {
         public String name;
         public String modeName;
@@ -80,7 +76,6 @@ public class ProfileConfig {
         public String seedText;
         public boolean editable = true;
         public int inventorySlot;
-        public String customConfig;
 
         public Profile(String name, SpeedrunPractice.PracticeMode mode, String worldName, String seed){
             this.name = name;

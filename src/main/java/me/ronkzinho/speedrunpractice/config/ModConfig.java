@@ -51,6 +51,7 @@ public class ModConfig{
     public boolean randomisePostBlindInventory=true;
     public boolean eliminateCageSpawns = false;
     public SpeedrunPractice.DragonType dragonType = SpeedrunPractice.DragonType.BOTH;
+    public SpeedrunPractice.NodePosition nodePosition = SpeedrunPractice.NodePosition.BOTH;
 
     public static ModConfig load() {
         Path path = FabricLoader.getInstance().getConfigDir().resolve("speedrun-practice.json");
@@ -142,6 +143,10 @@ public class ModConfig{
                 entryBuilder.startEnumSelector(new TranslatableText("speedrun-practice.options.dragon_type"),SpeedrunPractice.DragonType.class,dragonType)
                         .setDefaultValue(SpeedrunPractice.DragonType.BOTH)
                         .setSaveConsumer(a->dragonType=a)
+                        .build(),
+                entryBuilder.startEnumSelector(new TranslatableText("speedrun-practice.options.node_position"),SpeedrunPractice.NodePosition.class,nodePosition)
+                        .setDefaultValue(SpeedrunPractice.NodePosition.BOTH)
+                        .setSaveConsumer(a->nodePosition=a)
                         .build(),
                 entryBuilder.startBooleanToggle(new TranslatableText("speedrun-practice.options.eliminate_cage_spawns"),eliminateCageSpawns)
                         .setDefaultValue(true)

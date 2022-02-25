@@ -4,7 +4,10 @@
   "version": "${version}",
   "name": "SpeedrunPractice",
   "description": "",
-  "authors": [],
+  "authors": [
+    "Gregor0410",
+    "ronkzinho"
+  ],
   "contact": {},
   "license": "MIT",
   "environment": "*",

@@ -8,7 +8,9 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.SaveLevelScreen;
+import net.minecraft.client.gui.screen.options.GameOptionsScreen;
 import net.minecraft.client.gui.screen.world.MoreOptionsDialog;
 import net.minecraft.enchantment.Enchantments;
 import net.minecraft.entity.EquipmentSlot;
@@ -35,6 +37,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.registry.RegistryKey;
+import net.minecraft.world.GameMode;
 import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.StringUtils;
 
@@ -66,20 +69,18 @@ public abstract class Practice {
     abstract public int run(long seed, MinecraftServer server);
 
     public static int setSlot(CommandContext<ServerCommandSource> ctx) throws CommandSyntaxException {
-        String result = setSlot(IntegerArgumentType.getInteger(ctx,"slot"), ctx.getNodes().get(2).getNode().getName(), ctx.getSource().getPlayer(), 1);
+        String result = setSlot(IntegerArgumentType.getInteger(ctx,"slot")-1, ctx.getNodes().get(2).getNode().getName(), ctx.getSource().getPlayer());
         return result != null ? 1 : 0;
     }
 
     public static String setSlot(int slot, String key) {
-        return setSlot(slot, key, Objects.requireNonNull(MinecraftClient.getInstance().getServer()).getPlayerManager().getPlayerList().get(0), 2);
+        return setSlot(slot - 1, key, null);
     }
 
-    public static String setSlot(int slot, String key, ServerPlayerEntity player, int mode){
-        String text = String.format(Language.getInstance().get("speedrun-practice.inventorymanagement.options.slot.set"), key,slot);
-        if(mode == 1) player.sendMessage(new LiteralText(text),false);
-        SpeedrunPractice.profileConfig.profiles.forEach(profile -> {
-            profile.inventorySlot = slot;
-        });
+    public static String setSlot(int slot, String key, ServerPlayerEntity player){
+        String text = String.format(Language.getInstance().get("speedrun-practice.inventorymanagement.options.slot.set"), key,slot+1, key);
+        if(player != null) player.sendMessage(new LiteralText(text),false);
+        SpeedrunPractice.profileConfig.profiles.stream().filter(profile -> Objects.equals(profile.modeName, key)).forEach(profile -> profile.inventorySlot = slot);
         try {
             SpeedrunPractice.profileConfig.save();
         } catch (IOException e) {
@@ -121,8 +122,7 @@ public abstract class Practice {
     }
 
     public static void resetScreen(){
-        MinecraftClient.getInstance().openScreen(null);
-        MinecraftClient.getInstance().mouse.lockCursor();
+        MinecraftClient.getInstance().openScreen(new GameMenuScreen(true));
     }
 
     public static void getInventory(ServerPlayerEntity player, String key){
@@ -158,6 +158,7 @@ public abstract class Practice {
     }
 
     static void resetPlayer(ServerPlayerEntity player) {
+        player.setGameMode(GameMode.SURVIVAL);
         player.setHealth(20f);
         player.setExperienceLevel(0);
         player.setExperiencePoints(0);
@@ -166,6 +167,8 @@ public abstract class Practice {
         player.clearStatusEffects();
         player.setVelocity(Vec3d.ZERO);
         ((ServerPlayerEntityAccess)player).setSeenCredits(false);
+        ((ServerPlayerEntityAccess)player).setJoinInvulnerabilityTicks(30);
+        player.setFireTicks(0);
         SpeedrunPractice.autoSaveStater.deleteAllStates();
     }
 

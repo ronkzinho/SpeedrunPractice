@@ -1,28 +1,22 @@
 package me.ronkzinho.speedrunpractice.screens;
 
+import me.ronkzinho.speedrunpractice.IMinecraftServer;
 import me.ronkzinho.speedrunpractice.SpeedrunPractice;
 import me.ronkzinho.speedrunpractice.config.ProfileConfig;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.ScreenTexts;
 import net.minecraft.client.gui.screen.world.SelectWorldScreen;
-import net.minecraft.client.gui.widget.AbstractButtonWidget;
 import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.gui.widget.TexturedButtonWidget;
-import net.minecraft.client.resource.language.I18n;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
-import net.minecraft.util.Language;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
-import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class ProfileScreen extends Screen {
@@ -52,17 +46,6 @@ public class ProfileScreen extends Screen {
         return this;
     }
 
-    public void setServer(MinecraftServer server){
-        this.setShouldCloseOnEsc(false);
-        this.server = server;
-        if(this.parent instanceof QuickSettingsScreen){
-            ((QuickSettingsScreen) this.parent).setServer(this.server);
-        }
-        if(this.parent instanceof SelectProfileScreen){
-            ((SelectProfileScreen) this.parent).parent.setServer(this.server);
-        }
-    }
-
     public ProfileScreen(Screen parent){
         this(parent, new ProfileConfig.Profile(null, SpeedrunPractice.getCurrentProfile().getMode(), null, null), Mode.CREATE, SpeedrunPractice.profileConfig.profiles.size());
     }
@@ -83,6 +66,11 @@ public class ProfileScreen extends Screen {
     @Override
     protected void init() {
         super.init();
+        if(SpeedrunPractice.selectingWorldParent != null){
+            this.setShouldCloseOnEsc(false);
+            this.setInitialParent(null);
+        }
+        SpeedrunPractice.selectingWorldParent = null;
         if(this.server == null && this.client != null) this.server = this.client.getServer();
         this.x = (this.width / 2) - (this.bwidth / 2);
         this.y = (this.height / 2) - (this.spacingY * 3 + 13);
@@ -92,9 +80,9 @@ public class ProfileScreen extends Screen {
     }
 
     private void initLogic() {
+        this.selectWorld.setWidth(getSelectWorldWidth());
         this.modeButton.active = this.profile.editable || !this.profileMode.equals(Mode.EDIT);
         this.clearWorld.visible = this.profile.worldName != null;
-        this.selectWorld.setWidth(getSelectWorldWidth());
         this.seed.setText(this.profile.seedText);
         this.seed.setChangedListener(s -> this.profile.seedText = s);
         if(this.profile.name != null){
@@ -144,9 +132,11 @@ public class ProfileScreen extends Screen {
 
         this.selectWorld = this.addButton(new ButtonWidget(x, spacingY * 2 + finalY, getSelectWorldWidth(), bheight, this.getSelectWorldText(), button -> {
             if(server != null){
-                this.profile.worldName = server.getSaveProperties().getLevelName();
+                if(this.profile.worldName != null) return;
+                this.profile.worldName = ((IMinecraftServer) server).getSession().getDirectoryName();
                 this.done.active = true;
                 button.setMessage(this.getSelectWorldText());
+                this.initLogic();
             }
             else{
                 SpeedrunPractice.selectingWorldParent = this;
@@ -175,7 +165,7 @@ public class ProfileScreen extends Screen {
                     e.printStackTrace();
                 }
             }
-            if(onDone != null) onDone.accept(this.profile);
+            onDone.accept(profile);
             this.client.openScreen(parent);
         }));
 
@@ -197,13 +187,30 @@ public class ProfileScreen extends Screen {
     }
 
     public void setCustomStartPracticing(ButtonWidget.PressAction onPress){
-        if(!(parent instanceof QuickSettingsScreen) && !(parent instanceof SelectProfileScreen)) return;
-        ((SelectProfileScreen) parent).setCustomStartPracticing(onPress);
+        if(this.parent instanceof QuickSettingsScreen){
+            ((QuickSettingsScreen) parent).setCustomStartPracticing(onPress);
+        }
+        if(this.parent instanceof SelectProfileScreen){
+            ((SelectProfileScreen) parent).parent.setCustomStartPracticing(onPress);
+        }
     }
 
     public void setShouldCloseOnEsc(boolean closeOnEsc){
-        if(!(parent instanceof QuickSettingsScreen) && !(parent instanceof SelectProfileScreen)) return;
-        ((SelectProfileScreen) parent).setCloseOnEsc(closeOnEsc);
+        if(this.parent instanceof QuickSettingsScreen){
+           ((QuickSettingsScreen) parent).setCloseOnEsc(closeOnEsc);
+        }
+        if(this.parent instanceof SelectProfileScreen){
+            ((SelectProfileScreen) parent).parent.setCloseOnEsc(closeOnEsc);
+        }
+    }
+
+    public void setInitialParent(Screen screen) {
+        if(this.parent instanceof QuickSettingsScreen){
+            ((QuickSettingsScreen) parent).setInitialParent(screen);
+        }
+        if(this.parent instanceof SelectProfileScreen){
+            ((SelectProfileScreen) parent).parent.setInitialParent(screen);
+        }
     }
 
     public enum Mode{

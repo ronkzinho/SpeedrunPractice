@@ -25,4 +25,6 @@ public interface ServerPlayerEntityAccess {
     void invokeMoveToSpawn(ServerWorld world);
     @Accessor
     void setEnteredNetherPos(Vec3d netherPos);
+    @Accessor("joinInvulnerabilityTicks")
+    void setJoinInvulnerabilityTicks(int ticks);
 }

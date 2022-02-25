@@ -4,6 +4,7 @@ import me.ronkzinho.speedrunpractice.world.PracticeWorld;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.registry.RegistryKey;
 import net.minecraft.world.dimension.DimensionType;
+import net.minecraft.world.level.storage.LevelStorage;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,4 +15,5 @@ public interface IMinecraftServer {
     Map<RegistryKey<DimensionType>, PracticeWorld> createLinkedPracticeWorld(long seed) throws IOException;
     List<PracticeWorld> getEndPracticeWorlds();
     List<Map<RegistryKey<DimensionType>,PracticeWorld>> getLinkedPracticeWorlds();
+    LevelStorage.Session getSession();
 }
