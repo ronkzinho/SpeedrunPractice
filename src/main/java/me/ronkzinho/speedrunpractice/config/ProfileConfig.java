@@ -7,17 +7,17 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.resource.language.I18n;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
+import org.apache.commons.lang3.SerializationUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
+import java.util.*;
 
 public class ProfileConfig {
     @Nullable
@@ -27,15 +27,12 @@ public class ProfileConfig {
 
     public static ProfileConfig load(){
         Path path = FabricLoader.getInstance().getConfigDir().resolve(fileName);
-        BufferedReader reader = null;
+        BufferedReader reader;
         try {
             reader = Files.newBufferedReader(path);
             Gson gson = new Gson();
             ProfileConfig config = gson.fromJson(reader, ProfileConfig.class);
-            if(config.selected != null && config.selected >= config.profiles.size()){
-                config.selected = 0;
-                config.save();
-            }
+            config.checkSelected();
             reader.close();
             return config;
         } catch (IOException e) {
@@ -43,20 +40,65 @@ public class ProfileConfig {
         }
     }
 
+    public int checkSelected() {
+        if(this.selected != null && this.selected >= this.profiles.size()){
+            this.selected = 0;
+            try {
+                this.save();
+                return 1;
+            } catch (IOException ignored) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    private void removeDuplicates() {
+        ArrayList<Profile> newList = new ArrayList<>();
+
+        for (Profile element : this.profiles) {
+            if (newList.stream().noneMatch(profile -> profile.getDisplayName().trim().equals(element.getDisplayName().trim()))) {
+                newList.add(element.copy());
+            }
+        }
+
+        if(newList.size() < this.profiles.size()){
+            this.profiles.clear();
+            this.profiles.addAll(newList);
+            try{
+                if(this.checkSelected() == 0) this.save();
+            } catch(Exception ignored){}
+        }
+    }
+
     public void addDefaults(){
+        List<Profile> currentProfiles = new ArrayList<>(profiles);
         for(int i = 0; i < SpeedrunPractice.PracticeMode.values().length; i++) {
+            Profile currentProfile = this.profiles.get(i).copy();
             SpeedrunPractice.PracticeMode mode = SpeedrunPractice.PracticeMode.values()[i];
-            if (this.profiles.stream().noneMatch(profile -> profile.name.equals(mode.getTranslationKey()))) {
+            if (this.profiles.stream().noneMatch(profile -> profile.getDisplayName().equals(I18n.translate(mode.getTranslationKey())))) {
                 this.profiles.add(i, new Profile(mode.getTranslationKey(), mode, null, null).setEditable(false));
             }
             else{
-                Profile profile = this.profiles.stream().filter(p -> p.name.equals(mode.getTranslationKey())).findFirst().orElseGet(null);
-                if(profile != null){
+                Optional<Profile> optionalProfile = this.profiles.stream().filter(p -> p.name.equals(mode.getTranslationKey()) || p.getDisplayName().equals(I18n.translate(mode.getTranslationKey()))).findFirst();
+                if(optionalProfile.isPresent()){
+                    Profile profile = optionalProfile.get();
+                    if(!EqualsBuilder.reflectionEquals(currentProfile.copy(), profile.copy())){
+                        int index = this.profiles.indexOf(profile);
+                        this.profiles.set(i, profile);
+                        this.profiles.set(index, currentProfile);
+                    }
                     profile.setEditable(false);
                     profile.modeName = mode.getSimplifiedName();
                 }
             }
         }
+        if(!currentProfiles.equals(this.profiles)){
+            try {
+                this.save();
+            } catch (IOException ignored) {}
+        }
+        this.removeDuplicates();
     }
 
     public void save() throws IOException {
@@ -69,7 +111,7 @@ public class ProfileConfig {
         writer.close();
     }
 
-    public static class Profile {
+    public static class Profile implements Serializable {
         public String name;
         public String modeName;
         public String worldName;
@@ -107,10 +149,7 @@ public class ProfileConfig {
         }
 
         public Profile copy(){
-            Profile profile = new Profile(this.name, SpeedrunPractice.PracticeMode.fromSimplifiedName(this.modeName), this.worldName, this.seedText);
-            profile.inventorySlot = this.inventorySlot;
-            profile.editable = this.editable;
-            return profile;
+            return SerializationUtils.clone(this);
         }
     }
 }

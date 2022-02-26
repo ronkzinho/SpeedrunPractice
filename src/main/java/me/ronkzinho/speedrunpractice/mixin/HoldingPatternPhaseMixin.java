@@ -8,7 +8,9 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.ModifyArgs;
 import org.spongepowered.asm.mixin.injection.invoke.arg.Args;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @Mixin(HoldingPatternPhase.class)
 public class HoldingPatternPhaseMixin {
@@ -19,7 +21,7 @@ public class HoldingPatternPhaseMixin {
         int originalFrom = args.get(0);
         int originalTo = args.get(1);
         int from = SpeedrunPractice.config.dragonType.node != null ? SpeedrunPractice.config.dragonType.node : originalFrom;
-        Integer to = SpeedrunPractice.nodes.get(SpeedrunPractice.config.dragonType).get(SpeedrunPractice.config.nodePosition.ordinal());
+        Integer to = SpeedrunPractice.nodes.get(Arrays.stream(SpeedrunPractice.DragonType.values()).filter(dragonType -> Objects.equals(dragonType.node, SpeedrunPractice.config.nodePosition.equals(SpeedrunPractice.NodePosition.BOTH) ? null : from)).findFirst().orElseGet(() -> SpeedrunPractice.config.dragonType)).get(SpeedrunPractice.config.nodePosition.ordinal());
         args.set(0, from);
         args.set(1, to != null ? to : originalTo);
     }

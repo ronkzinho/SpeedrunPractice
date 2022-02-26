@@ -16,7 +16,6 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.text.Text;
 import net.minecraft.text.TranslatableText;
 import net.minecraft.util.Util;
-import org.apache.commons.lang3.BooleanUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -30,7 +29,6 @@ public class SelectProfileScreen extends Screen {
     protected final QuickSettingsScreen parent;
     private final Consumer<ProfileConfig.Profile> onSelect;
     protected ProfileListWidget profiles;
-    protected int spacingY = 24;
     private ButtonWidget selectButton;
     private ButtonWidget editButton;
     private ButtonWidget deleteButton;
@@ -83,7 +81,7 @@ public class SelectProfileScreen extends Screen {
     }
 
 
-    public class ProfileListWidget extends AlwaysSelectedEntryListWidget<ProfileListWidget.ProfileEntry>{
+    public class ProfileListWidget extends AlwaysSelectedEntryListWidget<ProfileListWidget.ProfileEntry> {
         List<ProfileConfig.Profile> profiles = SpeedrunPractice.profileConfig.profiles;
 
         public ProfileListWidget(Supplier<String> searchFilter) {
@@ -128,13 +126,13 @@ public class SelectProfileScreen extends Screen {
             return super.getRowTop(index);
         }
 
-        public class ProfileEntry extends EntryListWidget.Entry<ProfileEntry>{
+        public class ProfileEntry extends EntryListWidget.Entry<ProfileEntry> {
             private final int index;
             ProfileConfig.Profile profile;
             private long time;
             private final MinecraftClient client;
 
-            public ProfileEntry(ProfileConfig.Profile profile, MinecraftClient client, AtomicInteger index){
+            public ProfileEntry(ProfileConfig.Profile profile, MinecraftClient client, AtomicInteger index) {
                 this.profile = profile;
                 this.client = client;
                 this.index = index.get();
@@ -164,31 +162,31 @@ public class SelectProfileScreen extends Screen {
                 String[] suffixes = {this.profile.seedText, "" + (this.profile.inventorySlot + 1)};
                 List<String> restList = new ArrayList<>();
                 for (int i = 0; i < prefixes.length; i++) {
-                    if(suffixes[i] != null && !(suffixes[i].isEmpty())) restList.add(prefixes[i] + suffixes[i]);
+                    if (suffixes[i] != null && !(suffixes[i].isEmpty())) restList.add(prefixes[i] + suffixes[i]);
                 }
                 restList.set(0, restList.get(0).substring(0, 1).toUpperCase() + restList.get(0).substring(1));
                 String rest = String.join(", ", restList);
-                this.client.textRenderer.draw(matrices, name, (float)(x + 32 + 3), (float)(y + 1), 0xFFFFFF);
-                this.client.textRenderer.draw(matrices, "Mode: " + modeandworld, (float)(x + 32 + 3), (float)(y + this.client.textRenderer.fontHeight + 3), 0x808080);
-                this.client.textRenderer.draw(matrices, rest, (float)(x + 32 + 3), (float)(y + this.client.textRenderer.fontHeight + this.client.textRenderer.fontHeight + 3), 0x808080);
+                this.client.textRenderer.draw(matrices, name, (float) (x + 32 + 3), (float) (y + 1), 0xFFFFFF);
+                this.client.textRenderer.draw(matrices, "Mode: " + modeandworld, (float) (x + 32 + 3), (float) (y + this.client.textRenderer.fontHeight + 3), 0x808080);
+                this.client.textRenderer.draw(matrices, rest, (float) (x + 32 + 3), (float) (y + this.client.textRenderer.fontHeight + this.client.textRenderer.fontHeight + 3), 0x808080);
                 this.client.getTextureManager().bindTexture(this.profile.getMode().getIconId());
                 RenderSystem.enableBlend();
                 DrawableHelper.drawTexture(matrices, x, y, 0.0f, 0.0f, 32, 32, 32, 32);
                 RenderSystem.disableBlend();
             }
 
-            public void select(){
+            public void select() {
                 SelectProfileScreen.this.onSelect.accept(profile);
                 this.client.openScreen(SelectProfileScreen.this.parent);
             }
 
-            public void edit(){
+            public void edit() {
                 this.client.openScreen(new ProfileScreen(SelectProfileScreen.this, profile, this.index).setOnDone((p) -> this.profile = p));
             }
 
             public void delete() {
                 this.client.openScreen(new ConfirmScreen((t) -> {
-                    if(t){
+                    if (t) {
                         SpeedrunPractice.profileConfig.profiles.remove(profile);
                         try {
                             SpeedrunPractice.profileConfig.save();

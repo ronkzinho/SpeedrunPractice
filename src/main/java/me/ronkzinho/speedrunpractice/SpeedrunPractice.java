@@ -45,7 +45,7 @@ public class SpeedrunPractice implements ModInitializer {
     public static String MOD_ID = "speedrun-practice";
     public static ModConfig config;
     public static ProfileScreen selectingWorldParent;
-    public static ProfileConfig profileConfig = ProfileConfig.load();
+    public static ProfileConfig profileConfig;
     public static final Identifier BUTTON_ICON_TEXTURE = new Identifier("textures/item/golden_carrot.png");
     public static Map<StructureFeature<?>, StructureConfig> overworldStructures = Maps.newHashMap(StructuresConfig.DEFAULT_STRUCTURES);
     public static Map<StructureFeature<?>, StructureConfig> netherStructures = Maps.newHashMap(StructuresConfig.DEFAULT_STRUCTURES);
@@ -71,6 +71,7 @@ public class SpeedrunPractice implements ModInitializer {
             speedrunIGTInterface = new SpeedrunIGTInterface();
         } catch (NoSuchFieldException | ClassNotFoundException ignored) {}
         config = ModConfig.load();
+        profileConfig = ProfileConfig.load();
         update();
         Command.registerCommands();
         profileConfig.addDefaults();
@@ -132,9 +133,7 @@ public class SpeedrunPractice implements ModInitializer {
     public static void practice(){
         MinecraftClient client = MinecraftClient.getInstance();
         if(client.getServer() == null) return;
-        client.submit(() -> {
-            client.method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.creatingpracticeworld")));
-        });
+        client.submit(() -> client.method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.creatingpracticeworld"))));
         client.getServer().submit(() -> {
             try {
                 Objects.requireNonNull(getCurrentProfile()).getMode().getPracticeClass().getConstructor().newInstance().run();

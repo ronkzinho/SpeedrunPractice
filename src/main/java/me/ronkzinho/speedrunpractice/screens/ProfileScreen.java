@@ -73,6 +73,7 @@ public class ProfileScreen extends Screen {
             this.setShouldCloseOnEsc(false);
             this.setInitialParent(null);
         }
+        if(this.profileMode.equals(Mode.RECREATE)) this.profile.setEditable(true);
         SpeedrunPractice.selectingWorldParent = null;
         if(this.server == null && this.client != null) this.server = this.client.getServer();
         this.x = (this.width / 2) - (this.bwidth / 2);
@@ -108,7 +109,7 @@ public class ProfileScreen extends Screen {
     public void render(MatrixStack matrices, int mouseX, int mouseY, float delta) {
         this.renderBackground(matrices);
 //        this.children.forEach(element -> ((Drawable) element).render(matrices, mouseX, mouseY, delta));
-        this.drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, 40, 0xFFFFFF);
+        this.drawCenteredText(matrices, this.textRenderer, this.title, this.width / 2, (this.height / 10), 0xFFFFFF);
         this.drawTextWithShadow(matrices, this.textRenderer, this.nameField.getMessage(), this.nameField.x, this.nameField.y - (this.spacingY / 2), -6250336);
         this.drawTextWithShadow(matrices, this.textRenderer, this.seed.getMessage(), this.seed.x, this.seed.y - (this.spacingY / 2), -6250336);
         super.render(matrices, mouseX, mouseY, delta);
