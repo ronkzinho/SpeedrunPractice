@@ -122,7 +122,8 @@ public abstract class Practice {
     }
 
     public static void resetScreen(){
-        MinecraftClient.getInstance().openScreen(new GameMenuScreen(true));
+        MinecraftClient.getInstance().openScreen(null);
+        MinecraftClient.getInstance().mouse.lockCursor();
     }
 
     public static void getInventory(ServerPlayerEntity player, String key){

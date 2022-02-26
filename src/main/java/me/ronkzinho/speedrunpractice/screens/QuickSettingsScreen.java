@@ -106,7 +106,7 @@ public class QuickSettingsScreen extends Screen {
         this.inventoryButton = this.addButton(new ButtonWidget(x, spacingY + y, bwidth, bheight, new TranslatableText("speedrun-practice.inventorymanagement"), button -> this.client.openScreen(new InventoryManagementScreen(this))));
 
         this.options = this.addButton(new ButtonWidget(x, spacingY * 2 + y, bwidth, bheight, new TranslatableText("speedrun-practice.options"), button -> {
-            this.client.openScreen(SpeedrunPractice.config.getScreen(parent));
+            this.client.openScreen(SpeedrunPractice.config.getScreen(this));
         }));
 
         this.startPracticing = this.addButton(new ButtonWidget( x, spacingY * 3 + y, bwidth / 2 - 4, bheight, this.client != null && this.client.world != null ? ScreenTexts.DONE : new TranslatableText("speedrun-practice.startpracticing"), customStartPracticing != null ? customStartPracticing : button -> {

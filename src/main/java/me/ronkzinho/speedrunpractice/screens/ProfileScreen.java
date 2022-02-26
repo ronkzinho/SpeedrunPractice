@@ -17,6 +17,9 @@ import net.minecraft.text.TranslatableText;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 public class ProfileScreen extends Screen {
@@ -58,7 +61,7 @@ public class ProfileScreen extends Screen {
         super(new TranslatableText("speedrun-practice.profilesettings.title"));
         this.parent = parent;
         this.profile = profile.copy();
-        this.mode = profile.getMode();
+        this.mode = this.profile.getMode();
         this.profileMode = mode;
         this.profileIndex = profileIndex;
     }
@@ -144,13 +147,14 @@ public class ProfileScreen extends Screen {
             }
         }));
 
-        this.clearWorld = this.addButton(new ButtonWidget(selectWorld.x + selectWorld.getWidth(), selectWorld.y, bheight, bheight, new LiteralText("X"), button -> {
+        this.clearWorld = this.addButton(new ButtonWidget(selectWorld.x + getSelectWorldWidth(), selectWorld.y, bheight, bheight, new LiteralText("X"), button -> {
             this.profile.worldName = null;
             initLogic();
             this.selectWorld.setMessage(this.getSelectWorldText());
         }));
 
         this.done = this.addButton(new ButtonWidget(x, spacingY * 3 + finalY, bwidth / 2 - 4, bheight, this.profileMode.equals(Mode.EDIT) ? ScreenTexts.DONE : new TranslatableText("speedrun-practice.profile.recreate"), button -> {
+            if(!this.validate()) return;
             if(SpeedrunPractice.profileConfig.profiles.stream().noneMatch(p -> EqualsBuilder.reflectionEquals(p, this.profile))){
                 if(this.profileMode.equals(Mode.EDIT)){
                     SpeedrunPractice.profileConfig.profiles.set(this.profileIndex, this.profile);
@@ -165,13 +169,23 @@ public class ProfileScreen extends Screen {
                     e.printStackTrace();
                 }
             }
-            onDone.accept(profile);
+            if(onDone != null) onDone.accept(profile);
             this.client.openScreen(parent);
         }));
 
         this.cancel = this.addButton(new ButtonWidget(done.x + done.getWidth() + 10, done.y, done.getWidth(), bheight, ScreenTexts.CANCEL, button -> {
             this.client.openScreen(this.parent);
         }));
+    }
+
+    private boolean validate() {
+        List<ProfileConfig.Profile> profiles = new ArrayList<>(SpeedrunPractice.profileConfig.profiles);
+        if(this.profileMode.equals(Mode.EDIT)) profiles.remove(this.profileIndex);
+        if(profiles.stream().anyMatch(p -> p.getDisplayName().equals(this.profile.getDisplayName()))){
+            this.setInitialFocus(this.nameField);
+            return false;
+        };
+        return true;
     }
 
     private int getSelectWorldWidth() {

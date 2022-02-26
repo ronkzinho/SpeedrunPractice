@@ -20,8 +20,7 @@ public class HoldingPatternPhaseMixin {
         int originalTo = args.get(1);
         int from = SpeedrunPractice.config.dragonType.node != null ? SpeedrunPractice.config.dragonType.node : originalFrom;
         Integer to = SpeedrunPractice.nodes.get(SpeedrunPractice.config.dragonType).get(SpeedrunPractice.config.nodePosition.ordinal());
-        to = to != null ? to : originalTo;
         args.set(0, from);
-        args.set(1, to);
+        args.set(1, to != null ? to : originalTo);
     }
 }
