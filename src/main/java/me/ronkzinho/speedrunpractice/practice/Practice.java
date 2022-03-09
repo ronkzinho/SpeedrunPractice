@@ -49,6 +49,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public abstract class Practice {
+    public static void creatingPracticeWorld(MinecraftClient client) {
+        client.submit(() -> client.method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.creatingpracticeworld"))));
+    }
+
     public int run(){
         OptionalLong seed;
         OptionalLong optionalLong2;
@@ -118,15 +122,15 @@ public abstract class Practice {
         MinecraftClient.getInstance().submit(() -> {
             try {
                 Class<?> timerClass = Class.forName("com.redlimerl.speedrunigt.timer.InGameTimer");
-                Class<?> speedrunIGT = Class.forName("com.redlimerl.speedrunigt.SpeedRunIGT");
-                Class<?> drawer = Class.forName("com.redlimerl.speedrunigt.timer.TimerDrawer");
-                Object drawerInstance = speedrunIGT.getDeclaredField("TIMER_DRAWER").get(null);
-
-                drawer.getMethod("draw").invoke(drawerInstance);
+//                Class<?> speedrunIGT = Class.forName("com.redlimerl.speedrunigt.SpeedRunIGT");
+//                Class<?> drawer = Class.forName("com.redlimerl.speedrunigt.timer.TimerDrawer");
+//                Object drawerInstance = speedrunIGT.getDeclaredField("TIMER_DRAWER").get(null);
+//
+//                drawer.getMethod("draw").invoke(drawerInstance);
                 Method startMethod = timerClass.getMethod("start", String.class);
                 assert SpeedrunPractice.getCurrentProfile() != null;
                 startMethod.invoke(null, SpeedrunPractice.getCurrentProfile().worldName);
-            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException ignored){ }
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException /*| NoSuchFieldException*/ ignored){ }
         });
     }
 

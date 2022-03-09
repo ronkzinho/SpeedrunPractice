@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 
@@ -67,9 +68,9 @@ public class SpeedrunPractice implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        try {
-            speedrunIGTInterface = new SpeedrunIGTInterface();
-        } catch (NoSuchFieldException | ClassNotFoundException ignored) {}
+//        try {
+//            speedrunIGTInterface = new SpeedrunIGTInterface();
+//        } catch (NoSuchFieldException | ClassNotFoundException | NoClassDefFoundError ignored) {}
         config = ModConfig.load();
         profileConfig = ProfileConfig.load();
         update();
@@ -133,7 +134,12 @@ public class SpeedrunPractice implements ModInitializer {
     public static void practice(){
         MinecraftClient client = MinecraftClient.getInstance();
         if(client.getServer() == null) return;
-        client.submit(() -> client.method_29970(new SaveLevelScreen(new TranslatableText("speedrun-practice.screens.creatingpracticeworld"))));
+        Practice.creatingPracticeWorld(client);
+        client.submit(() -> {
+            try {
+                SpeedrunPractice.speedrunIGTInterface.resetTimer();
+            } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ignored) {}
+        });
         client.getServer().submit(() -> {
             try {
                 Objects.requireNonNull(getCurrentProfile()).getMode().getPracticeClass().getConstructor().newInstance().run();

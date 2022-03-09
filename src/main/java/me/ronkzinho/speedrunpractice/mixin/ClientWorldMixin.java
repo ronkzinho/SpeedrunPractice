@@ -20,7 +20,16 @@ public class ClientWorldMixin {
             ci.cancel();
             this.client.openScreen(null);
             this.client.mouse.lockCursor();
-            this.client.getServer().submit(SpeedrunPractice::practice);
+            this.client.submit(() -> {
+                Thread thread = new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        client.getServer().submit(SpeedrunPractice::practice);
+                    }
+                };
+                thread.start();
+            });
         }
     }
 }

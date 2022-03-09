@@ -3,6 +3,7 @@ package me.ronkzinho.speedrunpractice.screens;
 import me.ronkzinho.speedrunpractice.IMinecraftServer;
 import me.ronkzinho.speedrunpractice.SpeedrunPractice;
 import me.ronkzinho.speedrunpractice.config.ProfileConfig;
+import me.ronkzinho.speedrunpractice.practice.Practice;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.screen.SaveLevelScreen;
@@ -93,7 +94,7 @@ public class QuickSettingsScreen extends Screen {
         }))));
 
         this.editProfile = this.addButton(new TexturedButtonWidget(profileCycle.x + profileCycle.getWidth(), profileCycle.y, bheight, bheight, 0, 0, 20, new Identifier(MOD_ID, "textures/gui/editbutton.png"), 32, 64, button -> {
-            this.client.openScreen(new ProfileScreen(this, this.profile, ProfileScreen.Mode.EDIT, this.selected != null ? this.selected : SpeedrunPractice.profileConfig.profiles.indexOf(this.profile)).setOnDone((p) -> this.profile = p));
+            this.client.openScreen(new ProfileScreen(this, this.profile, ProfileScreen.Mode.EDIT, Objects.requireNonNull(this.selected)).setOnDone((p) -> this.profile = p));
         }, new TranslatableText("")));
 
         this.deselectProfile = this.addButton(new ButtonWidget(editProfile.x + editProfile.getWidth(), editProfile.y, bheight, bheight, new LiteralText("X"), button -> {
@@ -118,6 +119,7 @@ public class QuickSettingsScreen extends Screen {
                 return;
             }
 
+            if(this.server != null) Practice.creatingPracticeWorld(client);
             this.startPracticeSession();
         }));
 

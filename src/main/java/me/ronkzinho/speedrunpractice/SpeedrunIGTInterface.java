@@ -8,7 +8,7 @@ public class SpeedrunIGTInterface {
     private final Field startTimeField;
     private final Field activateTicksField;
 
-    public SpeedrunIGTInterface() throws NoSuchFieldException, ClassNotFoundException {
+    public SpeedrunIGTInterface() throws NoSuchFieldException, ClassNotFoundException, NoClassDefFoundError {
         timer = Class.forName("com.redlimerl.speedrunigt.timer.InGameTimer");
         startTimeField = timer.getDeclaredField("startTime");
         activateTicksField = timer.getDeclaredField("activateTicks");
@@ -25,6 +25,11 @@ public class SpeedrunIGTInterface {
         Object instance = timer.getMethod("getInstance").invoke(null);
         startTimeField.setLong(instance,timerState.startTime);
         activateTicksField.setLong(instance,timerState.activateTicks);
+    }
+
+    public void resetTimer() throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        Object instance = timer.getMethod("getInstance").invoke(null);
+        timer.getMethod("reset").invoke(instance);
     }
 
     public static class TimerState{

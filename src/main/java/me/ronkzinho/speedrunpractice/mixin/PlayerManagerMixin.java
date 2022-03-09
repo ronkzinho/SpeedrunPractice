@@ -1,6 +1,7 @@
 package me.ronkzinho.speedrunpractice.mixin;
 
 import me.ronkzinho.speedrunpractice.SpeedrunPractice;
+import me.ronkzinho.speedrunpractice.practice.Practice;
 import me.ronkzinho.speedrunpractice.world.PracticeWorld;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.ClientConnection;
@@ -39,6 +40,7 @@ public class PlayerManagerMixin {
     private void showWelcomeMessage(ClientConnection connection, ServerPlayerEntity player, CallbackInfo ci){
         if(SpeedrunPractice.selectingWorldParent != null){
             SpeedrunPractice.selectingWorldParent.setCustomStartPracticing(button -> {
+                Practice.creatingPracticeWorld(MinecraftClient.getInstance());
                 SpeedrunPractice.isPlaying = true;
                 welcome(player);
             });
@@ -55,7 +57,16 @@ public class PlayerManagerMixin {
             if(!SpeedrunPractice.welcomeShown)
                 SpeedrunPractice.sendWelcomeMessage(player);
             SpeedrunPractice.welcomeShown = true;
-            this.server.submit(SpeedrunPractice::practice);
+            MinecraftClient.getInstance().submit(() -> {
+                Thread thread = new Thread(){
+                    @Override
+                    public void run() {
+                        super.run();
+                        server.submit(SpeedrunPractice::practice);
+                    }
+                };
+                thread.start();
+            });
         }catch(Exception ignored){}
     }
 }

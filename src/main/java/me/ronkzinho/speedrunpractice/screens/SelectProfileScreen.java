@@ -21,9 +21,10 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SelectProfileScreen extends Screen {
     protected final QuickSettingsScreen parent;
@@ -104,11 +105,11 @@ public class SelectProfileScreen extends Screen {
             if (profiles == null || load) {
                 this.profiles = SpeedrunPractice.profileConfig.profiles;
             }
-            AtomicInteger index = new AtomicInteger();
-            this.profiles.stream().filter(profile -> profile.getDisplayName().toLowerCase().startsWith(supplier.get().toLowerCase())).forEach(profile -> {
-                this.addEntry(new ProfileEntry(profile, this.client, index));
-                index.getAndIncrement();
-            });
+            List<ProfileConfig.Profile> filteredProfiles = this.profiles.stream().filter(profile -> profile.getDisplayName().toLowerCase().startsWith(supplier.get().toLowerCase())).collect(Collectors.toList());
+            for(int i = 0; i < filteredProfiles.toArray().length; i++){
+                ProfileConfig.Profile profile = filteredProfiles.get(i);
+                this.addEntry(new ProfileEntry(profile, this.client, SpeedrunPractice.profileConfig.profiles.indexOf(profile)));
+            };
         }
 
         public Optional<ProfileEntry> getSelectedEntry() {
@@ -132,10 +133,10 @@ public class SelectProfileScreen extends Screen {
             private long time;
             private final MinecraftClient client;
 
-            public ProfileEntry(ProfileConfig.Profile profile, MinecraftClient client, AtomicInteger index) {
+            public ProfileEntry(ProfileConfig.Profile profile, MinecraftClient client, int index) {
                 this.profile = profile;
                 this.client = client;
-                this.index = index.get();
+                this.index = index;
             }
 
             @Override

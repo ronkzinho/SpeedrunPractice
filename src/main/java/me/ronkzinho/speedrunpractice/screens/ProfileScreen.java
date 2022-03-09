@@ -87,6 +87,7 @@ public class ProfileScreen extends Screen {
         this.selectWorld.setWidth(getSelectWorldWidth());
         this.modeButton.active = this.profile.editable || !this.profileMode.equals(Mode.EDIT);
         this.clearWorld.visible = this.profile.worldName != null;
+        this.clearWorld.x = this.x + getSelectWorldWidth();
         this.seed.setText(this.profile.seedText);
         this.seed.setChangedListener(s -> this.profile.seedText = s);
         if(this.profile.name != null){
@@ -156,7 +157,7 @@ public class ProfileScreen extends Screen {
 
         this.done = this.addButton(new ButtonWidget(x, spacingY * 3 + finalY, bwidth / 2 - 4, bheight, this.profileMode.equals(Mode.EDIT) ? ScreenTexts.DONE : new TranslatableText("speedrun-practice.profile.recreate"), button -> {
             if(!this.validate()) return;
-            if(SpeedrunPractice.profileConfig.profiles.stream().noneMatch(p -> EqualsBuilder.reflectionEquals(p, this.profile))){
+            if(SpeedrunPractice.profileConfig.profiles.stream().noneMatch(p -> EqualsBuilder.reflectionEquals(p.copy(), this.profile.copy()) && this.server == null)){
                 if(this.profileMode.equals(Mode.EDIT)){
                     SpeedrunPractice.profileConfig.profiles.set(this.profileIndex, this.profile);
                 }
@@ -183,7 +184,7 @@ public class ProfileScreen extends Screen {
         List<ProfileConfig.Profile> profiles = new ArrayList<>(SpeedrunPractice.profileConfig.profiles);
         if(this.profileMode.equals(Mode.EDIT)) profiles.remove(this.profileIndex);
         if(profiles.stream().anyMatch(p -> p.getDisplayName().equals(this.profile.getDisplayName()))){
-            this.setInitialFocus(this.nameField);
+            this.focusOn(this.nameField);
             return false;
         };
         return true;
