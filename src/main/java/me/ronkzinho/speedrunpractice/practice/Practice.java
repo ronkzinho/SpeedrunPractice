@@ -42,6 +42,7 @@ import net.minecraft.world.dimension.DimensionType;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -114,11 +115,19 @@ public abstract class Practice {
     }
 
     public static void startSpeedrunIGTTimer(){
-        try {
-            Class<?> timerClass = Class.forName("com.redlimerl.speedrunigt.timer.InGameTimer");
-            Method startMethod = timerClass.getMethod("start");
-            startMethod.invoke(null);
-        } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ignored){}
+        MinecraftClient.getInstance().submit(() -> {
+            try {
+                Class<?> timerClass = Class.forName("com.redlimerl.speedrunigt.timer.InGameTimer");
+                Class<?> speedrunIGT = Class.forName("com.redlimerl.speedrunigt.SpeedRunIGT");
+                Class<?> drawer = Class.forName("com.redlimerl.speedrunigt.timer.TimerDrawer");
+                Object drawerInstance = speedrunIGT.getDeclaredField("TIMER_DRAWER").get(null);
+
+                drawer.getMethod("draw").invoke(drawerInstance);
+                Method startMethod = timerClass.getMethod("start", String.class);
+                assert SpeedrunPractice.getCurrentProfile() != null;
+                startMethod.invoke(null, SpeedrunPractice.getCurrentProfile().worldName);
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | NoSuchFieldException ignored){ }
+        });
     }
 
     public static void resetScreen(){
