@@ -74,7 +74,7 @@ public class ProfileConfig {
     public void addDefaults(){
         List<Profile> currentProfiles = new ArrayList<>(profiles);
         for(int i = 0; i < SpeedrunPractice.PracticeMode.values().length; i++) {
-            Profile currentProfile = this.profiles.get(i).copy();
+            Profile currentProfile = this.profiles.size() > i ? this.profiles.get(i).copy() : null;
             SpeedrunPractice.PracticeMode mode = SpeedrunPractice.PracticeMode.values()[i];
             if (this.profiles.stream().noneMatch(profile -> profile.getDisplayName().equals(I18n.translate(mode.getTranslationKey())))) {
                 this.profiles.add(i, new Profile(mode.getTranslationKey(), mode, null, null).setEditable(false));
